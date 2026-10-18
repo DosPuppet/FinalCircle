@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0 (scaffold)**, **A1 (rules digest)** and **A2 (engine model and infrastructure)** done. Next: A3 (card data and deck legality).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure) and **A3** (card data and deck legality: 42 starter cards, 0 scripted yet) done. Next: A4 (engine core).
 
 ## Documents
 
@@ -42,6 +42,7 @@ This file tracks the project between sessions: current state, working rules, pit
   - a card's identity is its card number; reprint codes (`Re-174L/19-102L`) map to the oldest printing;
   - cards missing from the official data (Starter Set 2025 exclusives) are in `cards/data/supplement.json` with their source;
   - whatever can be read in the text (keywords, EX Burst, Limit Break, Damage N, Warp, Priming, costs) is deduced by the text parser, not written in scripts.
+- **Card data commands:** `npm run import-cards -- <group>|all [--fetch]`; `npm run coverage -- [--group <g>] [--text] [--card <code>] [--audit]`; `npx tsx tools/fr-glossary.ts` (French terms vs the official texts).
 - **Images:** never stored in the repository. Every URL goes through the server relay (`/ffimg/`), never straight to Square Enix's CDN (Cloudflare bans fast clients). Any tool that calls Square Enix's site or CDN is serial (at least 1.1 s between requests) and caches what it gets.
 - **Online play:** the server is authoritative (it validates the deck and every decision); a player receives only their view (`projectView`), their filtered events and the faces they know; the handshake carries `{ protocol, rules }` versions.
 - **Third-party code:** `github.com/delerium22/fftcg-game` has no license: read it for learning only, never copy its code (its deck lists are facts, cited as such).

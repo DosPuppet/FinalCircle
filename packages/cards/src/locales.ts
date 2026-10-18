@@ -4,7 +4,9 @@
  * (`cards/test/locales.test.ts` checks it).
  */
 import core from "../locales/fr/core.json";
+import starter25 from "../locales/fr/starter25.json";
 
 export const FRENCH_CATALOGS: Record<string, Record<string, string>> = {
   core,
+  starter25,
 };

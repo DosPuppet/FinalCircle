@@ -255,20 +255,26 @@ The engine follows the **Final Fantasy TCG Comprehensive Rules, version 3.3**, e
 
 ## Glossary (English → French)
 
-The French interface uses the words of the official French card texts. To be completed from the cards' parallel texts by `tools/fr-glossary.ts` (lot A3).
+The French interface uses the words of the official French card texts. `npx tsx tools/fr-glossary.ts` checks each pair against the official data (share of the cards with the English term whose French text has the French term; 2026-10-18).
 
-| English | French |
-|---|---|
-| Forward | Avant |
-| Backup | Soutien |
-| Monster | Monstre |
-| Summon | Invocation |
-| Character | Personnage (to confirm) |
-| Crystal | Cristal (type name in the official data) |
-| Haste | Booster |
-| Brave | Bravoure |
-| First Strike | Initiative |
-| Back Attack | Attaque Arrière |
-| Freeze | Gelez (verb on cards) |
-| Dull / Active | « Dullez » on cards; Active: to confirm |
-| Break Zone, Damage Zone, EX BURST | kept in English inside French card texts |
+| English | French | Check |
+|---|---|---|
+| Forward | Avant | 100 % |
+| Backup | Soutien | 100 % |
+| Monster | Monstre | 100 % |
+| Summon | Invocation | 97 % |
+| Character | Personnage | 100 % |
+| Crystal | Cristal | 89 % (9 cards) |
+| Haste | Booster | 99 % |
+| Brave | Bravoure | 100 % |
+| First Strike | Initiative | 100 % |
+| Back Attack | Attaque Arrière | 100 % |
+| Freeze it | Gelez-le | 100 % ("Gel…") |
+| Break it | Détruisez-le (broken: détruit) | 100 % |
+| Dull it / dull | Dullez-le / dullé | 100 % |
+| Activate it | Activez-le | 100 % |
+| removed from the game | retiré du jeu | 100 % |
+| Break Zone, Damage Zone, EX BURST, Main Phase, Attack Phase | kept in English inside the French texts | 100 % / 91 % |
+| ability / action ability / auto-ability / special ability | compétence / compétence d'action / compétence auto / compétence spéciale | from the texts |
+| Card Name X / Job X / Category X | Nom de Carte X / Job X / Catégorie X | from the texts |
+| Fire, Ice, Wind, Earth, Lightning, Water, Light, Dark | Feu, Glace, Vent, Terre, Foudre, Eau, Lumière, Ténèbres | from the texts ("Avant Glace", "Avants Vent") |

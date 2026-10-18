@@ -1,0 +1,13 @@
+{
+ "source": "https://fftcg.square-enix-games.com/en/play-article/ban-list-errata",
+ "asOf": "2025-08-08",
+ "standard": {
+  "banned": ["1-089H", "3-131H", "5-034C", "5-040C", "5-067R", "11-072R", "11-124H", "12-038H", "12-097H", "13-120H", "14-116H", "14-118H", "16-043H", "16-051L", "20-125R"],
+  "restricted": { "13-119L": 1, "19-102L": 1, "25-104L": 1 },
+  "nameGroups": [{ "with": "23-117L", "names": ["Chaos", "Feral Chaos"], "max": 3 }]
+ },
+ "l3": {
+  "boosters": 3,
+  "banned": []
+ }
+}

@@ -12,7 +12,9 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "verify": "tsx tools/verify.ts"
+    "verify": "tsx tools/verify.ts",
+    "import-cards": "tsx tools/import-cards.ts",
+    "coverage": "tsx tools/card-coverage.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",

@@ -6,10 +6,11 @@ Each item cites its origin (plan, lot). What was done is told in `docs/history.m
 
 | Item | Why | Needed by | Status |
 |---|---|---|---|
-| Starter Set 2025 **Vol. 2 decklist** and **both LB deck lists** | Square Enix does not publish starter lists; Materia Hunter (product 230) is a JavaScript app that could not be read headless; the delerium22 Vol. 2 file was edited for tests | A3 (deck file), A6b (scripts) | open: from a browser or from the user's physical deck |
-| French name and text of the 8 exclusives 27-122S…27-129S | missing from the official data; TCGCSV is English only (23-130H Luso is "Lusso" in French, 27-125S may be too) | A3 (`supplement.json`, `verified: false` until checked) | open |
+| Starter Set 2025 **Vol. 2 decklist** and **both LB deck lists** | Square Enix does not publish starter lists; Materia Hunter (product 230) is a JavaScript app that could not be read headless; the delerium22 Vol. 2 file was edited for tests | A3 (deck file), A6b (scripts) | main deck: reconstructed (source in the deck file); Vol. 2 LB deck: 4 of 8 cards known; open for the user to correct |
+| French name and text of the 8 exclusives 27-122S…27-129S | missing from the official data; TCGCSV is English only (23-130H Luso is "Lusso" in French, 27-125S may be too) | A3 (`supplement.json`, `verified: false` until checked) | written by hand after the official wording (2026-10-18); to check against the French printings |
 | Images of the 8 exclusives | absent from the CDN (403) | A8 (text frame meanwhile) | open: optionally the user's own scans, served outside Git like Planecircle's custom art |
 | Set 30 Memories of Life (2026-11-13) | enters L3, set 27 leaves | B0 | after release |
 | French set names | not in the official data | A3 (`setRegistry.ts`) | open |
 | L3 status of the 27-xxxS starter cards | not stated by the official format page | A3 (override list) | open |
 | URLs of the official format and ban pages | for the weekly legality check | B4 | open |
+| L3 and reprints | some booster sets reprint older card numbers (Dreamlike Oceans has 7- and 24- cards); `validateDeck` reads L3 by serial number (the official wording) | B0 | to confirm with the official format page |

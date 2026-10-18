@@ -1,1 +1,15 @@
-{}
+{
+ "L3": "L3",
+ "Standard": "Standard",
+ "The LB deck can have at most 8 cards (it has {n})": "Le deck LB peut compter au plus 8 cartes (il en a {n})",
+ "The main deck must have exactly 50 cards (it has {n})": "Le deck principal doit compter exactement 50 cartes (il en a {n})",
+ "Unknown card: {code}": "Carte inconnue : {code}",
+ "With {card}, at most {max} cards named {names} in total": "Avec {card}, au plus {max} cartes nommées {names} au total",
+ "{card} is banned in {format}": "La carte {card} est bannie en {format}",
+ "{card} is not legal in L3 (set {set})": "La carte {card} n'est pas légale en L3 (extension {set})",
+ "{card} is not playable yet": "La carte {card} n'est pas encore jouable",
+ "{card} is restricted to {max} copy in {format}": "La carte {card} est limitée à {max} exemplaire en {format}",
+ "{card}: Limit Break cards go in the LB deck only": "{card} : les cartes Limit Break vont uniquement dans le deck LB",
+ "{card}: at most 3 copies (the deck has {n})": "{card} : 3 exemplaires au plus (le deck en a {n})",
+ "{card}: only Limit Break cards go in the LB deck": "{card} : seules les cartes Limit Break vont dans le deck LB"
+}

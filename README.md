@@ -10,6 +10,15 @@ A platform for playing the **Final Fantasy Trading Card Game** against an AI (th
 - **Milestone 2:** the **L3** format (the latest three booster sets: Dreamlike Oceans, Blissful Eternity and Memories of Life from 13 November 2026), set by set, with prebuilt L3 decks.
 - **Formats:** Standard (every set, official ban and restricted list) and L3, both limited to the cards the engine handles.
 
+**Deck rules** (Comprehensive Rules 8.1): exactly 50 cards in the main deck, an LB deck of 0 to 8 Limit Break cards, at most 3 copies of a card number.
+
+**Standard ban and restricted list** (official list of 8 August 2025, `packages/cards/data/formats.json`):
+
+- **Banned:** 1-089H, 3-131H, 5-034C, 5-040C, 5-067R, 11-072R, 11-124H, 12-038H, 12-097H, 13-120H, 14-116H, 14-118H, 16-043H, 16-051L, 20-125R.
+- **Restricted to 1 copy:** 13-119L, 19-102L, 25-104L.
+- **Chaos (23-117L):** a deck with it has at most 3 cards named Chaos or Feral Chaos in total.
+- **L3:** the latest three booster sets by serial number (sets 27–29 until 12 November 2026, then 28–30); no banned card.
+
 ## Getting started
 
 ```bash
@@ -25,6 +34,10 @@ npm run verify -- --ci
 | `npm run verify -- --full` | Full check, at the end of a series or before a merge |
 | `npm run verify -- --ci` | Continuous-integration check (GitHub Actions, on every push) |
 | `npm test` | Vitest |
+| `npm run import-cards -- <group>\|all [--fetch]` | Card data from Square Enix's official card browser (one request, cached outside Git) into `packages/cards/data/<group>.json`; cards missing from it come from `packages/cards/data/supplement.json` |
+| `npm run coverage -- [--group <group>] [--text] [--card <code>] [--audit]` | Cards handled per group, texts of the remaining cards, one card in detail, gaps between texts and scripts |
+| `npx tsx tools/fr-glossary.ts` | Checks the English–French glossary of `docs/rules.md` against the official texts |
+| `npx tsx tools/rules-text.ts [--fetch]` | Text of the Comprehensive Rules PDF, for lookups by section (outside Git) |
 | `npm run typecheck` / `npm run lint` | Strict TypeScript / Biome |
 
 ## Architecture

@@ -1,0 +1,39 @@
+{
+ "id": "starter-2025-vol1",
+ "group": "starter25",
+ "name": "Starter Set 2025 Vol. 1 — Fire/Water",
+ "description": "Zack and Wuk Lamat lead the attack while Palom, Ifrit and the Backups burn the opposing Forwards; Limit Break deck with Vincent and Ultima Weapon.",
+ "fr": {
+  "name": "Starter Set 2025 Vol. 1 — Feu/Eau",
+  "description": "Zack et Wuk Lamat mènent l'attaque pendant que Palom, Ifrit et les Soutiens brûlent les Avants adverses ; deck Limit Break avec Vincent et Ultima Arma."
+ },
+ "elements": ["fire", "water"],
+ "cover": "22-112R",
+ "source": "Unofficial list (Square Enix does not publish starter lists): Materia Hunter product 229, as transcribed in github.com/delerium22/fftcg-game, decks/starter-2025-vol1.txt and starter-2025-vol1-lb.txt (2026-09-29); read 2026-10-18.",
+ "main": [
+  [3, "27-122S"],
+  [3, "27-123S"],
+  [3, "27-128S"],
+  [3, "27-129S"],
+  [3, "1-170C"],
+  [3, "3-143C"],
+  [3, "11-010C"],
+  [3, "11-121C"],
+  [3, "12-005C"],
+  [3, "13-013C"],
+  [3, "13-125R"],
+  [3, "18-003C"],
+  [3, "18-094C"],
+  [3, "18-129C"],
+  [2, "20-106R"],
+  [3, "21-001R"],
+  [3, "21-010H"]
+ ],
+ "lb": [
+  [2, "22-112R"],
+  [2, "22-123R"],
+  [1, "23-119R"],
+  [1, "23-130H"],
+  [2, "24-126H"]
+ ]
+}

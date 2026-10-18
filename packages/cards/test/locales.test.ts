@@ -1,15 +1,19 @@
 /**
  * French catalogs (from Planecircle): every player-facing English text has its French entry, and no entry is stale.
  *
- * Message ids come from the source of the engine, the cards, the client and the server: the string literal given to
- * `msg(…)`, `t(…)` or `tr(lang, …)` (comments are skipped); a call whose text is not a literal is refused, so that the
- * scan sees every id. The card definitions (`label`, `prompt`, `labels`) join the scan with the card scripts (lot A3).
+ * Message ids come from:
+ * - the source of the engine, the cards, the client and the server: the string literal given to `msg(…)`, `t(…)` or
+ *   `tr(lang, …)` (comments are skipped); a call whose text is not a literal is refused, so that the scan sees every id;
+ * - the card definitions, walked at run time: `label`, `prompt` and the values of `labels`, with the values of their
+ *   `msg` arguments.
  *
  * Catalogs are JSON objects with sorted keys (`npx tsx tools/locales.ts` rewrites them); one key has one translation
  * across all catalogs, since the client merges them.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { parseText } from "@finalcircle/engine";
 import { describe, expect, it } from "vitest";
+import { CARDS } from "../src/index";
 import { FRENCH_CATALOGS } from "../src/locales";
 
 const PACKAGES = new URL("../../", import.meta.url);
@@ -82,6 +86,33 @@ function scanSources(): Scan {
   return { ids, nonLiteral };
 }
 
+/** Whether an argument value of a `msg` text is itself text to translate (not a number, symbol or card reference). */
+const isWords = (v: string) => /\p{Ll}{2}/u.test(v) && !/^⟦[^⟧]*⟧$/.test(v);
+
+/** Message ids of a card text, with those of its arguments. */
+function textIds(text: string, into: Set<string>): void {
+  const { id, args } = parseText(text);
+  into.add(id);
+  for (const v of Object.values(args)) if (isWords(v)) textIds(v, into);
+}
+
+/** Message ids of the card definitions (printed texts, in `text` and `fr`, are not message ids). */
+function cardIds(): Set<string> {
+  const ids = new Set<string>();
+  const walk = (v: unknown): void => {
+    if (Array.isArray(v)) for (const x of v) walk(x);
+    else if (v && typeof v === "object")
+      for (const [k, x] of Object.entries(v as Record<string, unknown>)) {
+        if ((k === "label" || k === "prompt") && typeof x === "string") textIds(x, ids);
+        else if (k === "labels" && x && typeof x === "object" && !Array.isArray(x)) {
+          for (const l of Object.values(x)) if (typeof l === "string") textIds(l, ids);
+        } else if (k !== "fr" && k !== "text") walk(x);
+      }
+  };
+  walk(Object.values(CARDS));
+  return ids;
+}
+
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
 describe("French catalogs", () => {
@@ -95,6 +126,7 @@ describe("French catalogs", () => {
       else french.set(id, { file, text });
     }
   const scan = scanSources();
+  const cards = cardIds();
 
   it("every file of cards/locales/fr is listed in FRENCH_CATALOGS", () => {
     const files = readdirSync(new URL("cards/locales/fr/", PACKAGES)).map((f) => f.replace(/\.json$/, ""));
@@ -126,8 +158,12 @@ describe("French catalogs", () => {
     expect([...scan.ids].filter((id) => !french.has(id)).sort()).toEqual([]);
   });
 
+  it("every message id of the cards has a French entry", () => {
+    expect([...cards].filter((id) => !french.has(id)).sort()).toEqual([]);
+  });
+
   it("no catalog entry is stale", () => {
-    const used = new Set(scan.ids);
+    const used = new Set([...scan.ids, ...cards]);
     expect([...french.keys()].filter((id) => !used.has(id)).sort()).toEqual([]);
   });
 });

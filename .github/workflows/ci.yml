@@ -1,0 +1,41 @@
+# Continuous integration: short verification on every push and pull request, full verification every night.
+# The interface tests (Playwright + Vite) and the bench stay local: npm run verify -- --full.
+name: CI
+
+on:
+  push:
+    branches: [dev, master]
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: ${{ github.event_name == 'schedule' && 'Full verification' || 'Verification' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: npm run verify
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            npm run verify -- --full --no-ui --no-bench
+          else
+            npm run verify -- --ci
+          fi
+      - name: Verification logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-logs
+          path: test-results/verify/

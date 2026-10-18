@@ -1,0 +1,14 @@
+{
+  "name": "@finalcircle/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@finalcircle/ai": "^0.1.0",
+    "@finalcircle/cards": "^0.1.0",
+    "@finalcircle/engine": "^0.1.0"
+  }
+}

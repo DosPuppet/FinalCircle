@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+.vite/
+coverage/
+test-results/
+# Raw card dump, image cache and online games saved by the server: never committed
+/data/
+*.tsbuildinfo

@@ -1,0 +1,146 @@
+# PLAN-A — FinalCircle: a Final Fantasy TCG platform built on Planecircle
+
+## Context
+
+The user wants a web app to play the **Final Fantasy Trading Card Game** (FFTCG, Square Enix — not MTG's Final Fantasy set), built like their MTG app **Planecircle** (`/home/dospu/MTGX`): pure deterministic TypeScript rules engine, AI, Arena-style React client with the engine in a Web Worker, authoritative online server, tutorial, bilingual FR/EN (French by default). `/home/dospu/FinalCircle` is empty and not a git repo. This plan is copied to `docs/plans/PLAN-A.md` in A0 (Planecircle convention).
+
+Decisions taken with the user (2026-10-18):
+- **V1:** engine, 3-level AI, prebuilt decks, tutorial, deck builder (implemented cards only), **online 2-player duel** (BO1; FFTCG is 1v1: no 3–4 players, Commander or sideboard).
+- **Card pool:** Milestone 1 = the two **Starter Set 2025** decks (Vol. 1 Fire/Water "Zack", Vol. 2 Earth/Lightning "Cloud"; 50 main + 8 LB each; ~45 distinct cards) under Standard rules. Milestone 2 = **L3** (latest 3 booster sets: 28–30 from 2026-11-13), set by set, plus L3 prebuilt decks.
+- **Formats:** "Standard" (all sets, official ban/restricted list) and "L3", both limited to implemented cards.
+- **Images:** server relay + nginx cache, never in the repo, text-frame fallback; non-commercial fan project credited © SQUARE ENIX.
+
+## Data sources (verified 2026-10-18)
+
+| Source | Use | Notes |
+|---|---|---|
+| `POST https://fftcg.square-enix-games.com/en/get-cards` (`content-type: application/json`, body of empty filters `{"language":"fr","text":"","type":[],"element":[],"cost":[],"rarity":[],"power":[],"category_1":[],"set":[],"multicard":"","ex_burst":"","code":"","special":"","exactmatch":0}`; `"code"` for one card) | **Primary card data** | 4,261 cards in one 12.9 MB answer; `name_/type_/job_/text_` in en **and fr**; element as kanji (火氷風土雷水光闇), cost/power strings, rarity, category_1/2, multicard (generic), ex_burst, set[]. Markup `[[br]] [[i]] [[ex]] [[s]] [[b]]`, symbols `《ダル》《S》《C》《X》《LB》《火》《1》`. French markup is sometimes inconsistent (split lines, wrong tags). `C-00x` entries are empty placeholders. |
+| `https://fftcg.cdn.sewest.net/images/cards/{full,thumbs}/<code>_fr.jpg` / `_eg.jpg` | Images FR / EN | Cloudflare bans IPs after ~a dozen fast requests → relay serialized ≥1.1 s + long cache. |
+| TCGCSV `https://tcgcsv.com/tcgplayer/24/24472/products` (Starter Set 2025 group; set 30 = 24788, Heavensward starter = 24742) | Supplement | Only source for the **8 starter exclusives 27-122S…27-129S, missing from the API *and* the CDN** (English, with typos; French by hand). Never trust its `abbreviation` field. |
+| Materia Hunter `materiahunter.com/en/products/229` / `230` | Starter decklists | JS app, not fetchable headless. Vol. 1 list known (via delerium22, "unofficial"); **Vol. 2 list and both LB lists unconfirmed**. |
+| ffdecks.com `/api/card/game-language/1`, `/api/format/game/1` | Cross-check, L3 meta lists | English only. |
+| **Comprehensive Rules v3.3** (2026-08-07) `fftcg.cdn.sewest.net/2026-08/fftcg-comprules-v3.3.pdf`; rule sheet EN/FR `fftcg.cdn.sewest.net/2020-02/fftcgrulesheet-{en,fr}.pdf` | Rules | No French CR. |
+
+Formats (official, as of 2025-08-08): exactly 50 main + LB deck 0–8 (LB cards only), max 3 per card number (reprint codes `Re-174L/19-102L` share an identity). Standard banned: 1-089H, 3-131H, 5-034C, 5-040C, 5-067R, 11-072R, 11-124H, 12-038H, 12-097H, 13-120H, 14-116H, 14-118H, 16-043H, 16-051L, 20-125R; restricted to 1: 13-119L, 19-102L, 25-104L; 23-117L Chaos: max 3 "Chaos"/"Feral Chaos" in total. L3: no ban today.
+
+Prior art: `github.com/delerium22/fftcg-game` (TS, ISMCTS, same starters, CR v3.3) — **no license: read for learning, never copy code**; its decklists are used as facts, cited.
+
+## Architecture: what comes from Planecircle
+
+Same monorepo: `packages/{engine,cards,ai,client,server}` as `@finalcircle/*` (raw `.ts` exports, npm workspaces), `tools/`, `docs/`, `deploy/`; TS 7 strict (`noUncheckedIndexedAccess`), Biome, Vitest 5 (`isolate:false`, /tmp cleanup plugin), Playwright smokes, esbuild server bundle; React 19 + Vite 8 + Zustand 5 + motion. localStorage keys `finalcircle.*`. Same conventions: English code/docs, French by catalog (vouvoiement); engine pure and seeded; effects are serializable data; illegal decision → `RulesError`; `legalActions` mirrors the engine (strict fuzz `--offers`); one rules-test file per card group; golden games + `RULES_VERSION` on [rules] lots; no single-card debt; approximations in `docs/approximations.md`; one commit per lot on `dev` (only when the user asks), `master` stable.
+
+**Copied nearly as is** (from `/home/dospu/MTGX/`, the user's own MIT code):
+- engine: `errors.ts`, `events.ts`, `text.ts` (msg/cardRef/plainText), `opRegistry.ts`, `ops/index.ts`, `choices.ts` (minus "name"), `limits.ts`, `fingerprint.ts`, `record.ts`, `host.ts` (GameHost), `decisionShape.ts`, `scenario.ts`; from `state.ts`: mulberry32, shuffle, id counters, `cloneState` + WeakMap cache, `bump`; the `game.ts` skeleton (submit/applyMutable/advance loop/watchLoop) and the resumable `Resolution` interpreter;
+- ai: `random.ts`, `chaos.ts`, `selfplay.ts`, `ismcts.ts` shell, `levels.ts`, `profile.ts`, `scripted.ts`, `options.ts`, `choices.ts`;
+- client: `main.tsx`, `App.tsx`, `session.ts`, `worker/game.worker.ts`, `protocol.ts`, `savedGame.ts`, `scenario.ts`, `fast.ts`, `translate.ts`, `localize.ts`, `LangToggle.tsx`, `Dialog.tsx`, `touch.ts`, `boardThemes.ts`, `board/{backdrop.ts,Backdrop.tsx,Effects.tsx,Arrows.tsx,ReplayBar.tsx,Sidebar.tsx,StackReveal.tsx}`, `prompts/{ChoicePrompt.tsx,boardChoice.ts,ZoneTabs.tsx}`, `audio/{sfx,synth,sounds}.ts`, `SoundControl.tsx`, `decks/{store,share}.ts`, QR parts of `ImportExport.tsx`, `lobby/{Lobby,Online}.tsx` layout, tutorial `{runtime,store,placement}.ts`, `Coach.tsx`, `TutorialMenu.tsx`, `public/sw.js`, manifest;
+- server: `index.ts`, `rooms.ts`, `protocol.ts`, `validate.ts`, `aiPool.ts`, `aiWorker.ts`, `main.ts` (minus 3–4 players, Commander, sideboard, BO3, printings);
+- tools: `verify.ts`, `fuzz.ts`, `golden.ts`, `ai-arena.ts`, `bench.ts`, `locales.ts`, `french-source.ts`, `bundle-size.ts`, `build-server.ts`, `rooms-check.ts`, `load-test.ts`, `make-icons.ts`, smokes (`ui`, `lang`, `mobile`, `replay`, `tutorial`, `online`, `deck`); tests `english-source`, `locales`, `op-handlers`, later `debt`; `deploy/*`.
+
+**Rewritten for FFTCG:** engine model/rules/ops content, cards import and text parsing, deck validation, AI evaluation/combat/policy, client `store.ts` interaction, `Board.tsx`, `layout.ts`, `Card.tsx`, `Prompts.tsx`, `i18n.ts` (log), `eventSounds.ts`, `images.ts`, deck-builder filters, lesson content.
+
+## Rules model (CR v3.3)
+
+Full digest with section numbers goes to `docs/rules.md` (lot A1). Points that shape the engine:
+- **Characters do not use the stack** (11.4.1): special action, turn player, Main Phase, empty stack, no response; their enter auto-abilities go on the stack (11.4.7). Exception: **Back Attack** cards castable whenever you have priority in Main/Attack phases of either player (15.2.5).
+- **Summons, action and special abilities use the stack**, either player with priority, Main and Attack phases only (9.3.1.6–7). Priority = Planecircle's `{holder, passes}`: actor keeps priority after casting a Summon/ability; turn player after a resolution or a Character; two passes resolve the top or end the step (11.1).
+- **Turn:** Active (activate all except frozen) / Draw (2; first player draws 1 on turn 1) / Main 1 / Attack (Preparation → Declaration → Block → Damage, looping to Declaration) / Main 2 / End (end triggers, discard to 5, then damage removed and "until end of turn" ends simultaneously, loop until stable — 9.5.1).
+- **Attack:** one Forward or a **party** (2+ same-element Forwards) per declaration; attacker must be active and controlled since turn start or have Haste; dulls unless Brave. Non-turn player blocks with one active Forward (blocking does not dull). Unblocked → 1 damage to the player (also for a party); blocked → battle damage both ways; party total power to the blocker, blocker's damage split among members in 1000 steps; First Strike sub-step (party: only if all members have it) (10.1, 15.1.1.9).
+- **Damage to a player:** one deck card per point to the Damage Zone; **EX Bursts after all the damage**, in arrival order, optional, no response (6.5.2.1, 11.10); Damage N gating (15.2.6).
+- **Rule processes** (12.4, repeated until stable before priority): 7 damage / draw or damage with empty deck → loss (both → draw); power ≤0 → Break Zone (not "broken"); damage ≥ power → broken (source credited); duplicate non-generic names → all go; 2+ Light/Dark → all go; 6+ Backups → controller chooses the extras.
+- **CP (11.2, v3.3 rework):** discard a hand card → 2 CP of its element (not Light/Dark); dull an active Backup → 1 CP; ≥1 CP of each element of the card (Light/Dark: any); surplus allowed and lost; payment is atomic with the decision (no CP pool in the state, no "tap for mana" decision). Special ability = discard a same-name card + cost (11.7). LB: cast from the LB deck, pay CP + flip X other face-down LB cards; returns face up to the LB deck when it leaves (15.2.8).
+- **Effects order** (11.12.4.6): control → text → type/job → other info → power, self-source first, then timestamps; replaces MTG's 613 layers with a version-cached `chars()`.
+- 20 interpretations (I1–I20: CP surplus, unblocked party, LB flips, "choose" vs "select", Freeze scope, end-of-turn ordering…) are listed in `docs/rules.md` § Interpretations and `docs/approximations.md`, each with a single code path.
+
+### Key engine types (sketch)
+
+```ts
+type Element = "fire"|"ice"|"wind"|"earth"|"lightning"|"water"|"light"|"dark";
+type Zone = "deck"|"hand"|"field"|"break"|"damage"|"removed"|"lb"|"stack";
+interface GameObject { id; uid; defId; owner; controller; zone; dull; damage; frozen?; faceDown?; controlledSince; enteredAt; counters? }
+interface PlayerState { deck; hand; breakZone; damage; removed; lb; crystals; mulliganed; lost }
+interface GameState { version; rng; idCounters; defs; objects; players; field; stack; turn{number,active,phase,step}; priority;
+  attack: { attackers; blocker; firstStrikeDone } | null; effects; triggers; delayed; exBursts; pending; resolving; turnLog; winner; over }
+type Decision = keep | mulligan | pass | cast{card, payment, targets?, modes?, x?, lbFlip?} | activate{source, ability, payment, special?, targets?}
+  | attack{forwards} | endAttacks | block{blocker|null} | discard{cards} | choose{values} | concede;   // warp, prime: Milestone 2
+interface Payment { discard?: {card, as?}[]; dull?: {backup, as?}[]; crystals?: number }
+```
+
+`engine/src/cp.ts` (pure, shared with the client): `cpSources`, `checkPayment`, `suggestPayment` (exact enumeration: ≤32 Backup subsets × discard combos; minimal payments scored by the value of what is spent). `legalActions` offers `cast`/`activate` only when a payment and every "choose" target exist, with a suggested payment; `attack` lists single attackers and parties per element.
+
+DSL (same builders as Planecircle, FFTCG vocabulary), e.g.:
+```ts
+"13-013C": { abilities: [auto(when.entersSelf,
+  [fx.damage(ref.chosen("t"), amount.ifElse(cond.controls({ name: "Porom", type: "Forward" }), 8000, 4000))],
+  { choose: [target.forward("t")] })] },
+```
+Milestone 1 effects: damage / damageAll / power / setPower / gain (keywords, quoted abilities) / dull / activate / freeze / break / toBreakZone / returnToHand / removeFromPlay / draw / discard / search / lookTop / revealTop / playOntoField / fromBreakZone / shieldNextDamage / opponentSelects / selectModes / may / whenYouDo / if. Triggers: enters, leaves, putIntoBreakZone, attacks, blocks, dealsDamage, isDealtDamage, chosen, phaseStart, playerDamaged, delayed, state. Field abilities: power/keyword grants, `cantBeChosenBy`, `cantUseActionAbilities`, `cpAs`, `costMod`, `payOnly`, damage replacements (`eventReplacement`, ordered by the affected card's controller).
+
+## Card data pipeline
+
+- `tools/import-cards.ts`: `--fetch` = one POST, raw dump in `data/cache/fftcg/get-cards-<date>.json` (outside git); writes only the pool to `packages/cards/data/<group>.json` (`starter25.json`, later `s28/s29/s30.json`, 1-space JSON): element from kanji, numbers, categories (HTML entities decoded), generic, EX, rarity, markup normalized (`《１》`→`《1》`, unbalanced tags repaired), EN + `fr {name, type, job, text}`, image file names; reprint codes → identity of the oldest printing; `C-00x` dropped; French abilities aligned to English ones, mismatches reported for `cards/data/french-overrides.json`.
+- `cards/data/supplement.json`: the 8 exclusives (English from TCGCSV, corrected by hand, source noted; French by hand, `verified: false` until checked), `image: null` → text frame. `tools/fetch-supplement.ts` (one GET, cached, prints diffs only).
+- `cards/src/fftext.ts` (counterpart of `scryfall.ts`): ability split and kinds (auto / action / special / field), keyword deduction (Haste, Brave, First Strike, Back Attack, EX Burst, `Limit Break -- X`, `Damage N --`, Warp, Priming), cost tokens; feeds `audit.ts` (scripts must match the text's ability count and kinds).
+- `cards/src/setRegistry.ts` (sets 1–30: number, EN/FR name, date, kind; `l3Sets(date)`), `cards/data/formats.json` (bans, restricted, name groups, L3 window, source + date), `decklist.ts` `validateDeck(main, lb, format)` (messages via `msg()`), `decks/starter-2025-vol{1,2}.json` + `decks.ts`.
+- `tools/card-coverage.ts` (`--group`, `--text`, `--card`, `--audit`), `tools/fr-glossary.ts` (EN↔FR terms from the API's parallel texts: Avant, Soutien, Invocation, Booster, Bravoure, Initiative, Attaque Arrière, Gelez… so the interface uses the cards' words).
+
+## Client (FFTCG specifics)
+
+- **Board:** per side, Forwards row in front, Backups row behind (5 slots), Monsters at the end of the Forwards row; dull = 90° rotation; damage badge and effective power; **Damage Zone** strip of 7 slots with EX markers; Break Zone, removed, deck count, LB deck (face-down count + face-up fan), crystals; phase track with the four attack steps.
+- **Payment tray:** cost ("3 CP · ≥1 Fire") vs CP chosen as element chips; click hand cards (+2, element picker for multi-element) and active Backups (+1); Auto (engine suggestion) / Cancel / Confirm; double-click a card = cast with the suggestion; setting "always ask for the payment".
+- **Attack / block:** eligible Forwards glow; click = single attack, shift-click / long-press same element = party; "End attacks"; blocker picker with combat preview; party damage split = divide prompt by 1000.
+- **EX Burst:** card flies deck → Damage Zone and flips; EX reveal for both players, prompt for the damaged one.
+- **Card text renderer** (preview, deck builder, text frame): element CP icons, dull/special/crystal glyphs, EX BURST badge, special-ability names. **Own SVG element icons** (no official art); frame colors per element (multi = gradient).
+- **Text frame:** element frame, cost, localized name/type/job, power, text, category, code, "© SQUARE ENIX".
+- **Images:** always through `/ffimg/<full|thumbs>/<code>_<fr|eg>.jpg`; FR → EN → text frame; thumbs on the board, full in the preview; service worker caches `/ffimg/`.
+- Log (`describeEvents`): casts, CP from discards/dulls, attacks/parties, blocks, damage cards, EX Burst, broken vs put into Break Zone, LB flips. Sounds: one cast cue per element, damage flip, EX fanfare, break, LB flip.
+
+## Lots — Milestone 1 (PLAN-A)
+
+| Lot | Size | Content | Done when |
+|---|---|---|---|
+| **A0** Scaffold | S | `git init` (`master`, `dev`), workspaces, configs copied from MTGX (`package.json` trimmed, `tsconfig*`, `biome.json`, `vitest.config.ts`, CI, `verify.ts` trimmed, MIT `LICENSE` for code only), `.gitignore` (`data/cache`, `data/rooms`, `test-results`, `dist`), `CLAUDE.md`, `README.md` with legal notice (unofficial, non-commercial; FINAL FANTASY TCG and card names/texts/images © SQUARE ENIX; images never in the repo; no affiliation), docs skeleton, this plan as `docs/plans/PLAN-A.md` | `npm run verify` passes on the empty tree |
+| **A1** Rules digest | M | `docs/rules.md` (CR v3.3 by section + Interpretations I1–I20), glossary, `docs/approximations.md` | every engine area of A4/A5 cites its sections |
+| **A2** Copied engine infrastructure | M | copied engine files above; `locales.ts`, `french-source.ts`; tests `english-source`, `locales`, `op-handlers` | unit tests of text, choices, record pass |
+| **A3** Card data & legality | M | `import-cards.ts`, `fetch-supplement.ts`, `fftext.ts`, `setRegistry.ts`, `starter25.json`, `supplement.json`, `french-overrides.json`, `formats.json`, `decklist.ts`, starter decks, `card-coverage.ts`, `fr-glossary.ts`; tests `decklist`, `legality` (README list vs `formats.json`) | both starters validate; parser recognizes every keyword of the pool |
+| **A4** Engine core [rules] | L | `model/*`, `game.ts` (first-player choice, mulligan), `turn.ts`, `priority.ts`, `stack.ts`, `cp.ts`, `damage.ts` (Damage Zone, EX queue), `rules.ts` (12.4), end-phase loop, `legal.ts`, `view.ts`, `autopilot.ts`; tests `rules.test.ts` (by CR section), `cp.test.ts`, `offers.test.ts` | two vanilla decks play to 7 damage; each rule process tested |
+| **A5** Abilities & attacks [rules] | L | interpreter + DSL (`effects.ts`, `ops/*`, `dsl/*`), `triggers.ts`, `chars.ts` (11.12.4.6), damage replacements, `targets.ts` (choose/select), action/special/auto abilities (hand and Break Zone too), `attack.ts` (steps, party, split, First Strike, Brave, Haste, Back Attack), LB casting/return, Damage N; tests `abilities`, `attack`, `replacement`, `hidden` | strict fuzz `--offers` passes on test cards |
+| **A6** Starter scripts (a: Vol. 1, b: Vol. 2) | M | `cards/src/starter25/{common,vol1,vol2}.ts`, `engine/test/starter25.test.ts` (checks each card's text), audit baseline, `docs/sets/starter25.md` | 100% coverage, no audit gap, smoke plays every card |
+| **A7** AI, fuzz, golden | L | copied AI files; rewritten `evaluate.ts` (damage diff, board power, Backups, hand as CP, LB, crystals), `combat.ts` (attack-by-attack vs predicted block, EX risk; blocks: survive/trade/chump at lethal), `heuristic.ts`, `policy.ts`; determinization from seen cards + pool of seen elements (never the decklist); `fuzz`, `golden`, `arena`, `bench`; tests `invariants`, `hidden-info`, `ismcts`, `golden`, `smoke/starter25` | fuzz identical for any `--jobs`; chaos refused with `RulesError`; expert > medium > beginner over 600 games |
+| **A8** Game screen (a: shell+board, b: payment/attack/block/EX, c: log/sounds/polish) | L | copied client files; rewritten `store.ts`, `Board.tsx`, `layout.ts`, `Card.tsx`, `Prompts.tsx`, `i18n.ts`, `eventSounds.ts`, `images.ts`; new `PaymentTray.tsx`, `CardText.tsx`, `TextFrame.tsx`, element SVGs, icons; smokes `ui`, `lang`, `mobile`, `replay`, `bundle-size` (worker never imports `@finalcircle/cards`) | full game vs each AI level in both languages without page error; screenshots in `test-results/` |
+| **A9** Lobby & deck builder | M | `Lobby.tsx`, `FormatChoice.tsx` (Standard/L3, `finalcircle.format`), `decks/{store,share,ImportExport,search}`; rewritten `DeckBuilder.tsx` (filters element/type/cost/power/job/category/set/rarity/EX/LB/generic/text EN+FR; main and LB tabs 50/8; copies per card number; validation reasons); `deck-smoke` | build, validate, share and play a custom deck |
+| **A10** Tutorial | M | copied runtime; `lessons.ts`, 10 lessons on the starter cards: screen & goal, CP & Backups, Forwards, attack & Damage Zone, block & break, Summons & stack, abilities (action/auto/special/field), EX Burst & keywords, Limit Break & party, real game vs beginner AI; `allow` gains `cast{payment?}`, `attack`, `block`, `endAttacks`, `exBurst`; `tutorial.test.ts` (OUTCOMES), `tutorial-smoke` | both pass; lessons readable in FR and EN |
+| **A11** Online duel | L | server port (2 seats, optional AI seat, BO1 + rematch, rope, grace, persistence `data/rooms`, restore, version handshake, formats, deck validation); `/ffimg/` relay (allow-list `^/(full\|thumbs)/(?:\d{1,2}\|PR\|B\|Re)-\d{3}[A-Z]?_(eg\|fr)\.jpg$`, one upstream fetch at a time ≥1.1 s, dedup, failures cached 1 h, circuit breaker 30 min on 429/challenge → 503 → text frame; dev disk cache `data/cache/images`); `Online.tsx`, `RemoteSession`; `online-smoke`, `rooms-check`, `load-test`; server tests `online`, `persistence`, `static`, `images`, `ai-seats`, `format` | two browsers play a duel; reconnection and restart resume |
+| **A12** Deployment | M | `build-server.ts`, `deploy/{ecosystem.config.cjs (app finalcircle, 127.0.0.1:8788), nginx-finalcircle.conf (/ws, /ffimg/ cache 60 d with proxy_cache_lock, /), update.sh}`, `tools/warm-images.ts` (serial, 1.5 s), `docs/deployment.md` | staging on the VPS next to Planecircle, `/healthz` ok, images warmed |
+| **A13** Close | S | `verify --full`, goldens frozen, `docs/history.md`, merge to `master` | |
+
+## Lots — Milestone 2 (PLAN-B, written at the end of A13)
+
+- **B0** Rotation: reimport after 2026-11-13 (set 30), `l3Sets()` by date, groups `s28/s29/s30`, `debt.test.ts` + `debt-ceilings.ts` copied.
+- **B1** L3 mechanics [rules]: Crystals (gain/pay/count/alternative costs), Freeze, Back Attack cards, Warp, Priming, Monsters ("becomes a Forward"), counters, abilities usable by either player, random discard, must attack/block, cost reductions.
+- **B2.<set>** for 28, 29, 30 (~124 cards each): batch A simple cards, B set mechanics, C+ unique cards; `engine/test/s<set>.test.ts`, smoke file, `docs/sets/s<set>.md`; `verify --group s<set>` per batch.
+- **B3** 4–6 L3 prebuilt decks (from ffdecks tournament lists), balanced by arena (600 games).
+- **B4** `tools/check-legality.ts` (official ban/format pages vs `formats.json`), weekly CI.
+
+## Risks and handling
+
+- **Vol. 2 decklist and both LB lists unconfirmed:** A3 retries ffdecks / Materia Hunter (a real browser if available); otherwise the user provides them (from the physical deck). A6b and the Vol. 2 precon wait for it; Vol. 1 goes first.
+- **8 starter exclusives (incl. Zack 27-123S, Cloud 27-124S) have no official data nor image:** text from TCGCSV corrected by hand, French by hand (checked later against the French printing), text frame on screen; optionally the user's own scans via Planecircle's custom-art pipeline (`data/art/`, outside git).
+- **Rules ambiguities:** I1–I20 documented, tested, single code path; a ruling = one change + `RULES_VERSION`.
+- **CDN bans:** browsers never contact the CDN; serialized relay, circuit breaker, nginx 60-day cache, service worker, warm-up tool; imports = one POST.
+- **Terms of use / copyright:** non-commercial, credited, no images in the repo, card texts limited to the pool, own icons, no official logos; private GitHub repo recommended; take content down if asked.
+- **Starter cards and L3:** 27-xxxS leave L3 when set 27 rotates (2026-11-13) but stay Standard-legal.
+
+## Verification
+
+- **Per lot:** `npm run verify -- --group <G>` (tsc, Biome, coverage, bundle size, vitest, fuzz 2-player with `--offers`, chaos, mixed AI levels; UI smokes when the client, view or protocol changed, Vite running); engine lots also `npm run golden`.
+- **Engine:** rules tests by CR section (`rules`, `attack`, `abilities`, `cp`, `replacement`, `hidden`), `starter25.test.ts` per card text, `offers.test.ts`; `npm run fuzz -- --games 300 --jobs 10` identical for any `--jobs`; invariants at each decision (zone conservation, ≤5 Backups, names, cache freshness).
+- **AI:** `npm run arena` 600 games per level pair; `ai/test/hidden-info.test.ts` (never reads hidden cards).
+- **Interface:** `npm run dev` then `ui-smoke` (full game vs AI, screenshots), `lang-smoke` (FR and EN, no raw marker, no untranslated text), `mobile-smoke`, `deck-smoke`, `tutorial-smoke`, `replay-smoke`; `client/test/tutorial.test.ts` headless.
+- **Online:** server tests, `online-smoke` (two browsers), restart-resume check, `load-test`; on the VPS: `/healthz`, a duel between two devices, `X-Cache: HIT` on `/ffimg/` after warm-up.
+- **End of Milestone 1:** `npm run verify -- --full`.
+
+## Tracking
+
+| Lot | Status | Date | Notes |
+|---|---|---|---|
+| A0 | done | 2026-10-18 | git repository (branch `dev`, no commit yet), npm workspaces `@finalcircle/{engine,cards,ai,client,server}`, configs from Planecircle (`tsconfig*`, `biome.json`, `vitest.config.ts` with `passWithNoTests` until A2), `tools/verify.ts` (steps left out until their tools exist), CI, `CLAUDE.md`, `README.md` with the legal notice, `docs/{history,backlog,approximations}.md`. The `vite/client` types join `tsconfig.json` with the client in A8. |

@@ -4,7 +4,7 @@
  * (modes, targets, CP payment), choosing the attackers of a party, the blocker.
  */
 import type { AiLevel } from "@finalcircle/ai";
-import { CARDS, type DeckEntries, deckById, findCard } from "@finalcircle/cards";
+import { CARDS, type DeckEntries, type Format, findCard } from "@finalcircle/cards";
 import {
   type ActionOption,
   type AutopilotSettings,
@@ -25,14 +25,16 @@ import {
 import { create } from "zustand";
 import { soundsFor } from "./audio/eventSounds";
 import { playSound, preloadSounds } from "./audio/sfx";
+import { findDeck } from "./decks/store";
 import { fastMode } from "./fast";
+import { loadFormat, saveFormat } from "./format";
 import { describeEvents, type LogLine } from "./i18n";
 import type { FromWorker } from "./protocol";
 import { clearSavedGame, loadSavedGame, SaveWriter } from "./savedGame";
 import { LocalSession, type Session } from "./session";
 import { type Lang, setTextLang, t } from "./translate";
 
-export type Screen = "lobby" | "game";
+export type Screen = "lobby" | "game" | "decks";
 
 /** An option being cast or used: its modes, targets, payment, LB flips and same-name discard. */
 export interface Casting {
@@ -93,6 +95,12 @@ export function defsFor(decks: DeckEntries[]): Record<string, CardDef> {
 interface Store {
   screen: Screen;
   lang: Lang;
+  /** The format decks are checked against (home screen, deck builder). */
+  format: Format;
+  /** The deck open in the deck builder. */
+  editing: string | null;
+  /** A decklist received by a link (`#deck=`), offered for import in the deck builder. */
+  sharedDeck: string | null;
   settings: ClientSettings;
   aiLevel: AiLevel;
   session: Session | null;
@@ -123,6 +131,9 @@ interface Store {
   flash: { defId: string; at: number } | null;
 
   setLang(lang: Lang): void;
+  setFormat(format: Format): void;
+  /** Opens the deck builder (on a deck, or on the list). */
+  openDecks(id?: string | null): void;
   setAiLevel(level: AiLevel): void;
   setSettings(p: Partial<ClientSettings>): void;
   notify(text: string): void;
@@ -310,6 +321,9 @@ export const useGame = create<Store>((set, get) => {
   return {
     screen: "lobby",
     lang: loadLang(),
+    format: loadFormat(),
+    editing: null,
+    sharedDeck: null,
     settings: loadSettings(),
     aiLevel: loadLevel(),
     session: null,
@@ -338,6 +352,13 @@ export const useGame = create<Store>((set, get) => {
       }
       set({ lang });
     },
+    setFormat(format) {
+      saveFormat(format);
+      set({ format });
+    },
+    openDecks(id = null) {
+      set({ screen: "decks", editing: id });
+    },
     setAiLevel(level) {
       try {
         localStorage.setItem(LEVEL_KEY, level);
@@ -363,8 +384,8 @@ export const useGame = create<Store>((set, get) => {
       }, 3500);
     },
     startGame(myDeck, aiDeck, opts = {}) {
-      const mine = deckById(myDeck);
-      const theirs = deckById(aiDeck);
+      const mine = findDeck(myDeck);
+      const theirs = findDeck(aiDeck);
       if (!mine || !theirs) return;
       get().session?.close();
       queue.length = 0;

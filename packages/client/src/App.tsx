@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Board } from "./board/Board";
+import { DeckBuilder } from "./decks/DeckBuilder";
 import { Lobby } from "./lobby/Lobby";
 import { useLocalize } from "./localize";
 import { Prompts } from "./prompts/Prompts";
@@ -57,7 +58,7 @@ export function App() {
   const screen = useGame((s) => s.screen);
   return (
     <>
-      {screen === "lobby" ? <Lobby /> : <GameScreen />}
+      {screen === "lobby" ? <Lobby /> : screen === "decks" ? <DeckBuilder /> : <GameScreen />}
       <Toast />
     </>
   );

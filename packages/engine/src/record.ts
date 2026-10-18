@@ -18,8 +18,10 @@ export const RECORD_VERSION = 1;
  * from another version may no longer replay identically. Absent from a record: 0.
  *
  * - 1: first engine (PLAN-A A4): phases, priority, CP, casting, attacks and parties, damage, EX Burst, rule processes.
+ * - 2: abilities (PLAN-A A5): the effect handlers; an ability may choose its own card (CR 11.8.9 forbids only the ability
+ *   itself); the rule processes run again after the EX Bursts.
  */
-export const RULES_VERSION = 1;
+export const RULES_VERSION = 2;
 
 /** One checkpoint every N decisions (plus the last one of the game). */
 export const CHECKPOINT_EVERY = 25;

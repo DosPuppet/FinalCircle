@@ -102,7 +102,9 @@ const silentWindow = (s: GameState) => s.turn.phase === "end";
 /** CR 11.1.3–4, 12.3: rule processes, EX Bursts, triggers, then the decision of the step or priority. */
 function priorityStep(s: GameState): void {
   if (ruleProcesses(s)) return;
-  if (processExBursts(s) || s.resolving) return;
+  // EX Bursts resolved: the step starts again (rule processes first, CR 11.1.3).
+  const bursts = s.exBursts.length;
+  if (processExBursts(s) || s.resolving || bursts) return;
   if (putTriggersOnStack(s)) return;
   const t = s.turn;
   if (t.phase === "attack" && s.stack.length === 0) {

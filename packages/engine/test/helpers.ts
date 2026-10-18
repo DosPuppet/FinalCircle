@@ -136,6 +136,13 @@ export function settle(s: GameState, limit = 50): GameState {
   return s;
 }
 
+/** Passes priority while the stack resolves, until a question is asked (or the stack is empty). */
+export function untilChoice(s: GameState, limit = 50): GameState {
+  for (let i = 0; i < limit && s.pending?.kind === "priority" && s.stack.length && !s.over; i++)
+    s = act(s, s.pending.player, { type: "pass" });
+  return s;
+}
+
 /** Both players pass with an empty stack: the phase or step ends (questions answered as suggested on the way). */
 export function passPhase(s: GameState): GameState {
   const phase = s.turn.phase;

@@ -1,5 +1,6 @@
 {
  "A party is formed of Forwards of the same Element": "Un groupe se forme d'Avants du même Élément",
+ "Add {n} card(s) to your hand": "Ajoutez {n} carte(s) à votre main",
  "At least {n} for each": "Au moins {n} pour chacun",
  "Choice not among the options": "Choix hors des options",
  "Choose between {min} and {max}": "Choisissez entre {min} et {max}",
@@ -26,6 +27,9 @@
  "Only a face-down Limit Break card can be cast": "Seule une carte Limit Break face cachée peut être lancée",
  "Order of the cards put on the bottom of your deck (the first one goes to the bottom first)": "Ordre des cartes placées sous votre deck (la première va sous le deck en premier)",
  "Order of your auto-abilities on the stack (the last one resolves first)": "Ordre de vos compétences auto sur la pile (la dernière se résout en premier)",
+ "Play a card from your hand onto the field": "Jouez une carte de votre main sur le terrain",
+ "Search your deck": "Cherchez dans votre deck",
+ "Select {n} card(s)": "Sélectionnez {n} carte(s)",
  "Split the damage of your blocking Forward among the party": "Répartissez les dégâts de votre Avant bloqueur entre les membres du groupe",
  "The same card cannot pay twice": "La même carte ne peut pas payer deux fois",
  "There is no attack to block": "Il n'y a pas d'attaque à bloquer",

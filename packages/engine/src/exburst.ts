@@ -19,12 +19,12 @@ export function exBurstOf(
 ): { choose?: ChooseSpec[]; effects: Effect[]; modal?: Modal; label: string } {
   const d = s.defs[s.objects[card]?.defId ?? ""];
   if (!d) return { effects: [], label: "" };
-  if (d.type === "Summon") return { ...(d.summon ?? { effects: [] }), label: d.name };
+  if (d.type === "Summon") return { ...(d.summon ?? { effects: [] }), label: cardRef(d.id) };
   const abs = d.abilities.filter((a) => a.kind === "auto" && a.exBurst);
   return {
     choose: abs.flatMap((a) => (a.kind === "auto" ? (a.choose ?? []) : [])),
     effects: abs.flatMap((a) => (a.kind === "auto" ? a.effects : [])),
-    label: abs[0]?.label ?? d.name,
+    label: abs[0]?.label ?? cardRef(d.id),
   };
 }
 

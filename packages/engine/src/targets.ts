@@ -24,11 +24,12 @@ export function sourceMatches(
   return compareOk(by.cost, f.cost);
 }
 
-/** Whether `id` can be chosen by this chooser (its filter, its zone, the protections, never itself). */
+/** Whether `id` can be chosen by this chooser (its filter, its zone, the protections). */
 export function canChoose(s: GameState, id: ObjectId, spec: ChooseSpec, ctx: ChooserContext): boolean {
   const o = s.objects[id];
   if (!o || o.zone !== (spec.zone ?? "field")) return false;
-  if (id === ctx.sourceId) return false;
+  // CR 11.3.3, 11.6.5, 11.8.9: an ability or a Summon cannot choose itself; its card can be chosen ("other than [this
+  // card]" is written in the filter).
   if (!cardMatches(s, id, spec.filter, ctx, chars)) return false;
   if (o.zone === "field")
     for (const p of chars(s, id).cantBeChosenBy)

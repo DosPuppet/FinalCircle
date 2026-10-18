@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality: 42 starter cards, 0 scripted yet) and **A4** (engine core, rules 1) done. Next: A5 (abilities: effect handlers, DSL, replacements).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality: 42 starter cards, 0 scripted yet) , **A4** (engine core) and **A5** (abilities, rules 2) done. Next: A6 (scripts of the 42 starter cards).
 
 ## Documents
 

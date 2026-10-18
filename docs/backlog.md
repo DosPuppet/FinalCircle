@@ -19,7 +19,7 @@ Each item cites its origin (plan, lot). What was done is told in `docs/history.m
 
 | Item | Why | Needed by | Status |
 |---|---|---|---|
-| Replay viewer (record export, step through a finished game) | `ReplaySession` exists (A8), no screen opens it yet; `tools/replay-smoke.ts` checks the resumed saved game meanwhile | A9 (home screen) | open |
 | Card names in the log | hovering a card named in the log would show its preview (Planecircle's log does) | A8 polish | open |
 | Block preview with First Strike and effects | the preview compares powers only; First Strike, damage replacements and power changes on blocking are left out (labelled a preview) | after A10 | open |
 | Opponent's cards flying from their hand | hidden cards have no shared `uid` with the field, so they appear without a move | polish | open |
+| Image warm-up (`tools/warm-images.ts`) | the relay fetches one image every 1.1 s, so a card seen for the first time shows its text frame for a while; the 8 starter exclusives have no official image at all | A12 (possibly earlier) | open |

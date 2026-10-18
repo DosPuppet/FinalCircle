@@ -4,6 +4,7 @@
  */
 import type { AiLevel } from "@finalcircle/ai";
 import { type DeckList, findCard, validateDeck } from "@finalcircle/cards";
+import { isGameRecord } from "@finalcircle/engine";
 import { useState } from "react";
 import { SoundControl } from "../audio/SoundControl";
 import { ElementIcon } from "../board/ElementIcon";
@@ -74,6 +75,36 @@ function DeckChoice({
   );
 }
 
+/** "Replay a game": opens a downloaded game file in the replay viewer. */
+function ReplayOpener() {
+  const openReplay = useGame((s) => s.openReplay);
+  const notify = useGame((s) => s.notify);
+  const t = useT();
+  return (
+    <label className="btn replay-open">
+      {t("Replay a game")}
+      <input
+        type="file"
+        accept="application/json,.json"
+        hidden
+        data-testid="replay-file"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          try {
+            const record = JSON.parse(await file.text()) as unknown;
+            if (!isGameRecord(record)) return notify(t("This file is not a FinalCircle game."));
+            openReplay(record);
+          } catch {
+            notify(t("Unreadable file."));
+          }
+        }}
+      />
+    </label>
+  );
+}
+
 export function Lobby() {
   const startGame = useGame((s) => s.startGame);
   const openDecks = useGame((s) => s.openDecks);
@@ -119,9 +150,12 @@ export function Lobby() {
           <DeckChoice decks={decks} label={t("Your deck")} name="mine" value={mine} onChange={setMine} />
           <DeckChoice decks={decks} label={t("The AI's deck")} name="theirs" value={theirs} onChange={setTheirs} />
         </div>
-        <button type="button" className="btn" onClick={() => openDecks(null)} data-testid="open-decks">
-          {t("Deck builder")}
-        </button>
+        <div className="lobby-buttons">
+          <button type="button" className="btn" onClick={() => openDecks(null)} data-testid="open-decks">
+            {t("Deck builder")}
+          </button>
+          <ReplayOpener />
+        </div>
         <fieldset className="level-choice">
           <legend>{t("AI level")}</legend>
           <div className="seg">

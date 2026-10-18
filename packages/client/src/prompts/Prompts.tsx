@@ -502,13 +502,15 @@ function AbilityMenu({ view }: { view: GameView }) {
 
 function GameOver({ view }: { view: GameView }) {
   const leave = useGame((s) => s.leaveGame);
+  const exportGame = useGame((s) => s.exportGame);
+  const replaying = useGame((s) => !!s.replay);
   const t = useT();
   const [shown, setShown] = useState(true);
   // biome-ignore lint/correctness/useExhaustiveDependencies: shown again when a game ends
   useEffect(() => {
     setShown(true);
   }, [view.over]);
-  if (!view.over || !shown) return null;
+  if (!view.over || !shown || replaying) return null;
   const title = view.winner === "draw" ? t("Draw") : view.winner === view.viewer ? t("Victory") : t("Defeat");
   return (
     <Dialog title={title} className="game-over" onClose={() => setShown(false)} testId="game-over">
@@ -520,8 +522,14 @@ function GameOver({ view }: { view: GameView }) {
             : t("You have taken 7 damage, or could not draw.")}
       </p>
       <div className="prompt-actions">
-        <button type="button" className="btn ghost" onClick={() => setShown(false)}>
+        <button type="button" className="btn ghost" onClick={() => setShown(false)} data-testid="see-board">
           {t("See the board")}
+        </button>
+        <button type="button" className="btn ghost" onClick={() => exportGame("download")} data-testid="download-game">
+          {t("Download the game")}
+        </button>
+        <button type="button" className="btn" onClick={() => exportGame("replay")} data-testid="watch-replay">
+          {t("Watch the replay")}
         </button>
         <button type="button" className="btn primary" onClick={leave}>
           {t("Back to the menu")}

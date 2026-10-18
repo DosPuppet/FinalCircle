@@ -1,11 +1,12 @@
 /**
- * Saved game (from Planecircle's replay smoke): plays part of a game against the AI, reloads the page, and checks that
- * the game is replayed from its record to exactly the same position (the same cards in the same places, the same
- * decision pending), then plays on.
+ * Saved game and replays (from Planecircle's replay smoke): plays part of a game against the AI, reloads the page, and
+ * checks that the game is replayed from its record to exactly the same position (the same cards in the same places,
+ * the same decision pending); plays on, concedes, downloads the game, watches its replay (steps, end, point of view),
+ * and opens the downloaded file from the home screen.
  *
  * Requires: `npm run dev` running. Usage: npx tsx tools/replay-smoke.ts [actionsBefore] [screenshot-dir]
  */
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium, type Page } from "playwright";
 import { openHome, playGame } from "./ui-play";
@@ -88,10 +89,45 @@ if (after !== before) errors.push(`position differs after the reload:\nbefore ${
 // The game goes on after the replay.
 const end = await playGame(page, 40);
 if (!end.turn) errors.push("the game does not go on after the replay");
+
+// The end of the game: the record downloaded, then watched.
+if (!end.over) {
+  await page.locator("[data-tuto=settings]").click();
+  await page.locator(".settings-panel .btn.danger").click();
+}
+await page.locator("[data-testid=game-over]").waitFor({ timeout: 10_000 });
+const [download] = await Promise.all([page.waitForEvent("download"), page.locator("[data-testid=download-game]").click()]);
+const file = join(OUT, "game.json");
+await download.saveAs(file);
+const saved = JSON.parse(readFileSync(file, "utf8")) as { format?: string; decisions?: unknown[] };
+if (!saved.decisions?.length) errors.push("the downloaded game has no decisions");
+await page.locator("[data-testid=watch-replay]").click();
+await page.locator("[data-testid=replay-bar]").waitFor({ timeout: 10_000 });
+const pos = () => page.locator("[data-testid=replay-pos]").innerText();
+const start = await pos();
+for (let i = 0; i < 8; i++) await page.locator("[data-testid=replay-next]").click();
+if ((await pos()) === start) errors.push("the replay does not move forward");
+await page.screenshot({ path: join(OUT, "replay-step.png") });
+await page.locator("[data-testid=replay-end]").click();
+const [at, total] = (await pos()).split("/").map((x) => Number(x.trim()));
+if (at !== total) errors.push(`the replay did not reach its end (${at} / ${total})`);
+const over = await page.evaluate(
+  () => (window as unknown as { __fc: { getState(): { view: { over: boolean } | null } } }).__fc.getState().view?.over,
+);
+if (!over) errors.push("the end of the replay is not the end of the game");
+await page.locator(".replay-viewer select").selectOption({ index: 1 });
+await page.screenshot({ path: join(OUT, "replay-end.png") });
+await page.locator(".replay-bar .btn.ghost").click();
+
+// The downloaded file, opened from the home screen.
+await page.locator("[data-testid=replay-file]").setInputFiles(file);
+await page.locator("[data-testid=replay-bar]").waitFor({ timeout: 10_000 });
 await browser.close();
 
 for (const e of errors) console.log(e);
 console.log(
-  errors.length ? `FAILED: ${errors.length} problem(s)` : `ok: replay of the saved game after a reload (${decisions} decisions)`,
+  errors.length
+    ? `FAILED: ${errors.length} problem(s)`
+    : `ok: replay of the saved game after a reload (${decisions} decisions), of a finished game and of its file`,
 );
 if (errors.length) process.exit(1);

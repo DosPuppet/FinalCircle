@@ -15,6 +15,7 @@ import { Card, type Glow } from "./Card";
 import { ShieldIcon, SwordIcon } from "./ElementIcon";
 import { PaymentTray } from "./PaymentTray";
 import { Preview } from "./Preview";
+import { ReplayBar } from "./ReplayBar";
 
 const PHASES: Phase[] = ["active", "draw", "main1", "attack", "main2", "end"];
 const STEPS: AttackStep[] = ["preparation", "declaration", "block", "damage"];
@@ -336,8 +337,9 @@ function MainButton({ view }: { view: GameView }) {
   const casting = useGame((s) => s.casting);
   const loc = useLocalize();
   const t = useT();
+  const replaying = useGame((s) => !!s.replay);
   const action = mainAction(view, party, blocker);
-  const waiting = !action && !view.over;
+  const waiting = !action && !view.over && !replaying;
   return (
     <div className="main-actions">
       {action && !casting ? (
@@ -352,7 +354,7 @@ function MainButton({ view }: { view: GameView }) {
         </button>
       ) : null}
       {waiting ? <span className="waiting">{t("The opponent is playing…")}</span> : null}
-      {view.turn.active === view.viewer && !view.over && !casting ? (
+      {view.turn.active === view.viewer && !view.over && !casting && !replaying ? (
         <button type="button" className="btn ghost" onClick={() => endTurn()} title={t("Pass until the end of the turn")}>
           {t("End turn")}
         </button>
@@ -386,7 +388,7 @@ function Settings() {
   const setSettings = useGame((s) => s.setSettings);
   const decide = useGame((s) => s.decide);
   const leave = useGame((s) => s.leaveGame);
-  const over = useGame((s) => s.view?.over);
+  const over = useGame((s) => s.view?.over || !!s.replay);
   const t = useT();
   const [open, setOpen] = useState(false);
   return (
@@ -426,6 +428,7 @@ function Settings() {
 
 export function Board() {
   const view = useGame((s) => s.view);
+  const replaying = useGame((s) => !!s.replay);
   const t = useT();
   if (!view) return <div className="loading">{t("Loading the game…")}</div>;
   const me = view.viewer;
@@ -443,7 +446,7 @@ export function Board() {
           <PhaseTrack view={view} />
           <AttackInfo view={view} />
           <StackView view={view} />
-          <MainButton view={view} />
+          {replaying ? <ReplayBar /> : <MainButton view={view} />}
           <Settings />
         </div>
         <FieldSide view={view} player={me} mine />

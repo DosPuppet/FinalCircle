@@ -88,7 +88,13 @@ for (const lang of ["fr", "en"] as const) {
   }
   await page.locator("[data-testid=game-over]").waitFor({ timeout: 10_000 });
   await check(page, lang, "game over");
-  await page.locator("[data-testid=game-over] .btn.ghost").click();
+  await page
+    .locator("[data-testid=see-board]")
+    .click({ timeout: 5000 })
+    .catch(async (e: Error) => {
+      await page.screenshot({ path: join(OUT, `${lang}-stuck.png`) });
+      throw e;
+    });
   if (!(await page.locator(".settings-panel").count())) await page.locator("[data-tuto=settings]").click();
   await page.waitForTimeout(200);
   await check(page, lang, "settings");

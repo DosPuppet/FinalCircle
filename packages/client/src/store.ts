@@ -4,7 +4,7 @@
  * (modes, targets, CP payment), choosing the attackers of a party, the blocker.
  */
 import type { AiLevel } from "@finalcircle/ai";
-import { CARDS, type DeckEntries, type Format, findCard } from "@finalcircle/cards";
+import { CARDS, card, type DeckEntries, type Format, findCard } from "@finalcircle/cards";
 import {
   type ActionOption,
   type AutopilotSettings,
@@ -15,6 +15,7 @@ import {
   type Decision,
   type Element,
   type GameEvent,
+  type GameRecord,
   type GameView,
   msg,
   type ObjectId,
@@ -31,7 +32,7 @@ import { loadFormat, saveFormat } from "./format";
 import { describeEvents, type LogLine } from "./i18n";
 import type { FromWorker } from "./protocol";
 import { clearSavedGame, loadSavedGame, SaveWriter } from "./savedGame";
-import { LocalSession, type Session } from "./session";
+import { LocalSession, ReplaySession, type Session } from "./session";
 import { type Lang, setTextLang, t } from "./translate";
 
 export type Screen = "lobby" | "game" | "decks";
@@ -121,6 +122,15 @@ interface Store {
   peek: string | null;
   /** The ability chooser of a card with several abilities. */
   abilityMenu: ObjectId | null;
+  /** A recorded game being watched (`ReplaySession`): its position, point of view and automatic playback. */
+  replay: {
+    index: number;
+    total: number;
+    viewer: string;
+    players: { id: string; name: string }[];
+    playing: boolean;
+    warning: string | null;
+  } | null;
   /** Options picked for the pending question (cards, labels) or the cards to discard. */
   selection: string[];
   /** Updates being shown one after the other (the AI's actions are paced). */
@@ -151,6 +161,12 @@ interface Store {
   confirmCast(): void;
   cancelCast(): void;
   closeAbilityMenu(): void;
+  /** The game's record: downloaded as a file, or opened in the replay viewer. */
+  exportGame(then: "download" | "replay"): void;
+  openReplay(record: GameRecord): void;
+  replaySeek(index: number): void;
+  replayViewer(player: string): void;
+  replayPlay(on: boolean): void;
   setSelection(selection: string[]): void;
   /** A Multi-Element source of the payment gives its next element (CR 5.2.1.3). */
   cyclePaymentElement(id: ObjectId): void;
@@ -164,6 +180,21 @@ let writer: SaveWriter | null = null;
 const queue: FromWorker[] = [];
 /** A decision was sent and its answer (an update or an error) has not come back: a second click is ignored. */
 let inFlight = false;
+/** What to do with the record the worker sends back (`exportGame`). */
+let recordWanted: "download" | "replay" | null = null;
+/** Replay autoplay: one step every 700 ms. */
+let replayTimer: ReturnType<typeof setInterval> | null = null;
+
+/** A game record downloaded as a JSON file (`finalcircle-game-2026-10-18-2214.json`). */
+function downloadRecord(record: GameRecord): void {
+  const stamp = new Date().toISOString().slice(0, 16).replace("T", "-").replace(":", "");
+  const blob = new Blob([JSON.stringify(record)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `finalcircle-game-${stamp}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
 
 /** The options of the viewer's pending priority. */
 export function priorityActions(view: GameView | null): ActionOption[] {
@@ -311,8 +342,14 @@ export const useGame = create<Store>((set, get) => {
           notice: msg("The saved game could not be resumed: {why}.", { why: m.message }),
         });
         return;
-      case "record":
+      case "record": {
+        const wanted = recordWanted;
+        recordWanted = null;
+        if (!m.record) get().notify(msg("This game is not recorded."));
+        else if (wanted === "download") downloadRecord(m.record);
+        else if (wanted === "replay") get().openReplay(m.record);
         return;
+      }
     }
   };
 
@@ -340,6 +377,7 @@ export const useGame = create<Store>((set, get) => {
     hits: {},
     flash: null,
     abilityMenu: null,
+    replay: null,
     selection: [],
     busy: false,
 
@@ -395,7 +433,7 @@ export const useGame = create<Store>((set, get) => {
       preloadSounds();
       writer?.stop();
       writer = opts.sandbox ? null : new SaveWriter(() => ({ aiLevel: level, log: get().log }));
-      set({ session, screen: "game", view: null, faces: {}, log: [], casting: null, party: [], blocker: null });
+      set({ session, screen: "game", view: null, faces: {}, log: [], casting: null, party: [], blocker: null, replay: null });
       session.send({
         type: "start",
         seed: opts.seed ?? Math.floor(Math.random() * 2 ** 31),
@@ -436,13 +474,15 @@ export const useGame = create<Store>((set, get) => {
       sendSettings(get().settings);
     },
     leaveGame() {
+      if (replayTimer) clearInterval(replayTimer);
+      replayTimer = null;
       writer?.stop();
       writer = null;
       clearSavedGame();
       get().session?.close();
       queue.length = 0;
       inFlight = false;
-      set({ session: null, view: null, screen: "lobby", casting: null, party: [], blocker: null });
+      set({ session: null, view: null, screen: "lobby", casting: null, party: [], blocker: null, replay: null });
     },
     decide(d) {
       if ((get().busy || inFlight) && d.type !== "concede") return;
@@ -568,6 +608,78 @@ export const useGame = create<Store>((set, get) => {
     },
     closeAbilityMenu() {
       set({ abilityMenu: null });
+    },
+    exportGame(then) {
+      recordWanted = then;
+      get().session?.send({ type: "export" });
+    },
+    openReplay(record) {
+      writer?.stop();
+      writer = null;
+      get().session?.close();
+      queue.length = 0;
+      inFlight = false;
+      if (replayTimer) clearInterval(replayTimer);
+      replayTimer = null;
+      let session: ReplaySession;
+      try {
+        session = new ReplaySession(record, card);
+      } catch (e) {
+        get().notify(msg("Replay impossible: {error}", { error: e instanceof Error ? e.message : String(e) }));
+        return;
+      }
+      const viewer = record.players[0]?.id ?? "p1";
+      const { view, faces } = session.frame(0, viewer, false);
+      set({
+        screen: "game",
+        session,
+        view,
+        faces,
+        log: [],
+        casting: null,
+        party: [],
+        blocker: null,
+        selection: [],
+        abilityMenu: null,
+        replay: {
+          index: 0,
+          total: session.states.length - 1,
+          viewer,
+          players: record.players.map((p) => ({ id: p.id, name: p.name })),
+          playing: false,
+          warning: session.warning,
+        },
+      });
+    },
+    replaySeek(index) {
+      const { replay, session } = get();
+      if (!replay || !(session instanceof ReplaySession)) return;
+      const i = Math.max(0, Math.min(replay.total, index));
+      // One step forward: its events (log, sounds, damage); a jump: the position only, the log emptied.
+      const step = i === replay.index + 1;
+      const frame = session.frame(i, replay.viewer, step);
+      if (step) applyUpdate({ type: "update", ...frame });
+      else set({ view: frame.view, faces: { ...get().faces, ...frame.faces }, log: [] });
+      set({ replay: { ...replay, index: i } });
+      if (i >= replay.total) get().replayPlay(false);
+    },
+    replayViewer(player) {
+      const { replay, session } = get();
+      if (!replay || !(session instanceof ReplaySession)) return;
+      const frame = session.frame(replay.index, player, false);
+      set({ replay: { ...replay, viewer: player }, view: frame.view, faces: { ...get().faces, ...frame.faces }, log: [] });
+    },
+    replayPlay(on) {
+      const replay = get().replay;
+      if (!replay) return;
+      if (replayTimer) clearInterval(replayTimer);
+      replayTimer = null;
+      if (on)
+        replayTimer = setInterval(() => {
+          const r = get().replay;
+          if (r) get().replaySeek(r.index + 1);
+        }, 700);
+      set({ replay: { ...replay, playing: on } });
     },
     setSelection(selection) {
       set({ selection });

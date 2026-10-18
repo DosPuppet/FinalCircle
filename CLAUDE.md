@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality), **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested), **A7** (AI levels, fuzz, golden games), **A8** (game screen: board, payment, prompts, attacks and blocks, EX Burst, animations, sounds, phones; interface smokes), **A9** (deck builder, sharing, home screen, replay viewer), **A10** (tutorial: ten lessons) and **A11** (online duel: server and client) done. Next: A12 (deployment).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality), **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested), **A7** (AI levels, fuzz, golden games), **A8** (game screen: board, payment, prompts, attacks and blocks, EX Burst, animations, sounds, phones; interface smokes), **A9** (deck builder, sharing, home screen, replay viewer), **A10** (tutorial: ten lessons) and **A11** (online duel: server and client; A11c: images of the exclusives, card descriptions) done. Next: A12 (deployment).
 
 ## Documents
 
@@ -45,7 +45,7 @@ This file tracks the project between sessions: current state, working rules, pit
   - cards missing from the official data (Starter Set 2025 exclusives) are in `cards/data/supplement.json` with their source;
   - whatever can be read in the text (keywords, EX Burst, Limit Break, Damage N, Warp, Priming, costs) is deduced by the text parser, not written in scripts.
 - **Card data commands:** `npm run import-cards -- <group>|all [--fetch]`; `npm run coverage -- [--group <g>] [--text] [--card <code>] [--audit]`; `npx tsx tools/fr-glossary.ts` (French terms vs the official texts).
-- **Images:** never stored in the repository. Every URL goes through the server relay (`/ffimg/`), never straight to Square Enix's CDN (Cloudflare bans fast clients). Any tool that calls Square Enix's site or CDN is serial (at least 1.1 s between requests) and caches what it gets.
+- **Images:** never stored in the repository. Every URL goes through the server relay (`/ffimg/`), never straight to Square Enix's CDN (Cloudflare bans fast clients). Any tool that calls Square Enix's site or CDN (or another image host) is serial (at least 1.1 s between requests) and caches what it gets. Images the CDN lacks (the 8 starter exclusives) are kept on the server in `data/images` (`tools/missing-images.ts`, from TCGplayer; `imageSource` in the card data), served by the relay before the CDN; French falls back to the English image.
 - **Online play:** the server is authoritative (it validates the deck and every decision); a player receives only their view (`projectView`), their filtered events and the faces they know; the handshake carries `{ protocol, rules }` versions.
 - **Third-party code:** `github.com/delerium22/fftcg-game` has no license: read it for learning only, never copy its code (its deck lists are facts, cited as such).
 - **Commits:** one commit per lot (or sub-lot) on `dev`, made at the end of the lot once `verify` passes, without asking (user decision, 2026-10-18); message in English, ending with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; `master` for the stable version; the user pushes.

@@ -20,8 +20,9 @@ export const RECORD_VERSION = 1;
  * - 1: first engine (PLAN-A A4): phases, priority, CP, casting, attacks and parties, damage, EX Burst, rule processes.
  * - 2: abilities (PLAN-A A5): the effect handlers; an ability may choose its own card (CR 11.8.9 forbids only the ability
  *   itself); the rule processes run again after the EX Bursts.
+ * - 3: Cloud 27-124S gives +3000 power (its printed text, read on the card scan), not +1000.
  */
-export const RULES_VERSION = 2;
+export const RULES_VERSION = 3;
 
 /** One checkpoint every N decisions (plus the last one of the game). */
 export const CHECKPOINT_EVERY = 25;

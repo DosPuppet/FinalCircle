@@ -8,6 +8,7 @@ import { type CardDef, type CardFace, cardFace, type Element } from "@finalcircl
 import { useMemo, useState } from "react";
 import { Card } from "../board/Card";
 import { ElementIcon } from "../board/ElementIcon";
+import { CardDetails } from "../board/Preview";
 import { faceName, TYPE_LABEL } from "../i18n";
 import { LangToggle } from "../LangToggle";
 import { FormatChoice } from "../lobby/FormatChoice";
@@ -306,14 +307,13 @@ function DeckPanel({ deck, onAdd, onRemove }: { deck: DeckList; onAdd: (id: stri
 /** The card under the pointer, large. */
 function DeckPreview() {
   const hover = useGame((s) => s.hover);
-  const lang = useGame((s) => s.lang);
   const face = hover ? FACES[hover] : undefined;
   return (
     <div className="preview deck-preview">
       {face ? (
         <>
           <Card face={face} size="full" />
-          <div className="preview-name">{faceName(face, lang)}</div>
+          <CardDetails face={face} />
         </>
       ) : (
         <div className="preview empty" />
@@ -334,6 +334,7 @@ function DeckPeek() {
     <div className="touch-preview" onClick={() => setPeek(null)}>
       <div className="preview">
         <Card face={face} size="full" />
+        <CardDetails face={face} />
       </div>
     </div>
   );

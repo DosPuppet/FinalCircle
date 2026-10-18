@@ -243,11 +243,12 @@ describe("Starter Set 2025 Vol. 2", () => {
     expect(chars(s, mine).keywords).toEqual(["brave"]);
   });
 
-  it("27-124S Cloud: +1000 and Brave to your Forwards; at the beginning of your Attack Phase, a Forward of yours is protected", () => {
+  it("27-124S Cloud: +3000 and Brave to your Forwards; at the beginning of your Attack Phase, a Forward of yours is protected", () => {
     let s = scenario({ p1: { hand: [c("27-124S"), fodderEarth, fodderEarth], field: [forward("t-mine", "earth", 2, 5000)] } });
     s = settle(cast(s, "p1", "27-124S"));
     const mine = idOf(s, "p1", "field", "t-mine");
-    expect(chars(s, mine).power).toBe(6000);
+    expect(chars(s, mine).power).toBe(8000);
+    expect(chars(s, mine).keywords).toContain("brave");
     s = passPhase(s);
     s = settle(choose(untilChoice(s), [mine]));
     expect(chars(s, mine).flags.sort()).toEqual(["cantBeBroken", "cantBeReturnedByOpponent"]);

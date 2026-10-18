@@ -54,6 +54,7 @@ describe("deck builder search", () => {
   it("free words in English or French, without accents", () => {
     expect(names("leonora")).toEqual(["Leonora"]);
     expect(names("Palom")).toContain("Palom");
+    expect(names("27-123s")).toEqual(["Zack"]);
   });
 
   it("type, element, cost and power, in both languages", () => {

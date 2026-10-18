@@ -1,6 +1,6 @@
 /**
  * Deck builder search (from Planecircle, FFTCG vocabulary):
- * - free words: name, job, category or text, in English or French;
+ * - free words: name, job, category, text (English or French) or card number;
  * - `t:` type (`t:forward`, `t:avant`), `e:` element (`e:fire`, `e:feu`), `j:` job, `cat:` category, `r:` rarity,
  *   `s:` set number;
  * - `cost` and `power` with `:`, `=`, `<`, `>`, `<=`, `>=` (`cost<=2`, `power>=8000`);
@@ -47,7 +47,7 @@ const TYPE_WORDS: Record<string, CardDef["type"]> = {
 };
 
 const haystack = (c: CardDef) =>
-  normalize([c.name, c.fr?.name, c.jobs.join(" "), c.fr?.job, c.categories.join(" "), c.text, c.fr?.text].join(" "));
+  normalize([c.name, c.fr?.name, c.jobs.join(" "), c.fr?.job, c.categories.join(" "), c.text, c.fr?.text, ...c.codes].join(" "));
 
 const texts = (c: CardDef) => normalize([c.text, c.fr?.text].join(" "));
 

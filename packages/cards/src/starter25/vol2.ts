@@ -151,11 +151,11 @@ export const VOL2: Record<string, CardScript> = {
       }),
     ],
   },
-  // Cloud: your Forwards gain +1000 and Brave; at the beginning of your Attack Phase, a Forward of yours is protected.
+  // Cloud: your Forwards gain +3000 and Brave; at the beginning of your Attack Phase, a Forward of yours is protected.
   "27-124S": {
     abilities: [
-      auto(when.enters, [fx.power(yourForwards, 1000), fx.gain(yourForwards, ["brave"])], {
-        label: "Your Forwards gain +1000 power and Brave",
+      auto(when.enters, [fx.power(yourForwards, 3000), fx.gain(yourForwards, ["brave"])], {
+        label: "Your Forwards gain +3000 power and Brave",
       }),
       auto(when.phaseStart("attack"), [fx.gain(ref.chosen(), [], ["cantBeBroken", "cantBeReturnedByOpponent"])], {
         choose: [target.forward({ controller: "you" })],

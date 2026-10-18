@@ -36,6 +36,7 @@ npm run verify -- --ci
 | `npx tsx tools/tutorial-smoke.ts [fr\|en]` | Follows every tutorial lesson in a browser (Vite running) |
 | `npx tsx tools/{lang,mobile,replay}-smoke.ts` | Both languages, phones in portrait and landscape, a saved game resumed after a reload (Vite running; run by `verify` when the client changed) |
 | `npx tsx tools/bundle-size.ts` | Builds the client and checks each chunk against its budget |
+| `npx tsx tools/missing-images.ts` | Fetches once the images Square Enix's CDN lacks (the 8 starter exclusives, from TCGplayer) into `data/images`, outside Git, where the relay serves them |
 | `npm run server` | The online server on port 8788: WebSocket /ws, card images /ffimg/, the built client (`npm run build` first); games saved in `data/rooms` |
 | `npx tsx tools/rooms-check.ts [dir]` / `node --expose-gc --import tsx tools/load-test.ts` | Saved online games against the repository's engine (before a deployment) / memory per room |
 | `npm run verify -- --group <group>` | Check of a lot: types, Biome, tests (then, as they are written: coverage, bundle budget, fuzz, interface tests) |
@@ -67,7 +68,7 @@ The project's code is under the [MIT](LICENSE) license. It does not cover what b
 
 FinalCircle is an **unofficial, free and non-commercial fan project**. It is not affiliated with, endorsed or sponsored by Square Enix. FINAL FANTASY and FINAL FANTASY TRADING CARD GAME are trademarks of Square Enix. Card names, texts and images are © SQUARE ENIX.
 
-- Card images are **never stored in the repository**. They stay hosted by Square Enix and reach players through the server relay, cached by nginx.
+- Card images are **never stored in the repository**. They stay hosted by Square Enix and reach players through the server relay, cached by nginx. The eight Starter Set 2025 exclusives (27-122S…27-129S), absent from Square Enix's card browser, use TCGplayer's product images (English), fetched once by `tools/missing-images.ts` and kept on the server only (`data/images`).
 - The card texts in the repository are limited to the playable cards.
 - The element icons are the project's own drawings, not official art.
 - Any content will be removed at the request of the rights holder.

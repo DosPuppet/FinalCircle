@@ -15,6 +15,10 @@ The cards of the two Starter Set 2025 decks (`packages/cards/decks/starter-2025-
 - Effects: damage (to one, to all, scaled by a count), power and keywords until the end of the turn, protections gained (27-124S, 12-120C), dull, activate, break, put into the Break Zone, back to the hand, search (to the hand, onto the field), look at or reveal the top cards, play from the hand, draw, discard and read the discarded card (11-121C), select by the opponent (20-106R, 24-126H), "When you do so" (23-119R), modes (12-120C, 20-103H, 27-125S), a one-time shield (11-121C).
 - Limit Break: 22-112R, 22-123R, 23-119R, 23-130H, 24-126H, 23-125R, 22-119R. EX Burst: 1-170C, 3-143C, 12-005C, 21-001R, 16-092C, 20-105C, 13-072R, 27-127S.
 
+## Corrections
+
+- 27-124S Cloud: "+3000 power and Brave", as printed (read on the card scan, 2026-10-18); the TCGplayer listing the English text came from said +1000 (`RULES_VERSION` 3). The seven other exclusives match their scans.
+
 ## Approximations
 
 - 27-122S Wuk Lamat: "gains 'If a Forward you control deals damage to a Forward, the damage increases by 2000 instead'" is written as a field ability of Wuk Lamat with the same condition (no observable difference).

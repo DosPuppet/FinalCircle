@@ -26,8 +26,13 @@ export interface RawCard {
   /** English text, normalized (`fftext.ts`). */
   text: string;
   fr: { name: string; type: string; job: string; text: string };
-  /** Image file names on the official CDN; null: none (the text frame is shown). */
+  /**
+   * Image file names, requested through the relay (`/ffimg/<size>/<file>`); null: none (the text frame is shown). For a
+   * card the official CDN lacks, the file comes from the server's store (`imageSource`).
+   */
   image: { en?: string; fr?: string } | null;
+  /** An image the official CDN lacks: where `tools/missing-images.ts` fetches it (TCGplayer product id). */
+  imageSource?: { tcgplayer: number };
   /** Where a card missing from the official data comes from. */
   source?: string;
   /** False while a hand-written French text is not checked against the French printing. */

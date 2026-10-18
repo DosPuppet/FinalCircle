@@ -1275,8 +1275,13 @@
    "job": "Princesse/Guerrier",
    "text": "Si vous contrôlez 7 Personnages ou plus, Wuk Lamat gagne \"Si un Avant que vous contrôlez inflige des dégâts à un Avant, les dégâts augmentent de 2000 à la place.\"[[br]]Lorsque Wuk Lamat entre sur le terrain ou attaque, choisissez 1 Avant contrôlé par votre adversaire. Si vous contrôlez 5 Personnages ou plus, infligez-lui 7000 points de dégâts."
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards (2026-10-18).",
+  "image": {
+   "en": "27-122S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656632
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards (2026-10-18).",
   "verified": false
  },
  {
@@ -1311,8 +1316,13 @@
    "job": "SOLDAT",
    "text": "Si votre adversaire contrôle 3 Avants ou plus, Zack gagne Booster.[[br]]Lorsque Zack entre sur le terrain ou attaque, infligez 1000 points de dégâts pour chaque Soutien que vous contrôlez à tous les Avants contrôlés par votre adversaire."
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards (2026-10-18).",
+  "image": {
+   "en": "27-123S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656629
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards (2026-10-18).",
   "verified": false
  },
  {
@@ -1340,15 +1350,20 @@
   "printedIn": [
    "Starter Set 2025"
   ],
-  "text": "When Cloud enters the field, until the end of the turn, all the Forwards you control gain +1000 power and Brave.[[br]]At the beginning of the Attack Phase during each of your turns, choose 1 Forward you control. Until the end of the turn, it gains \"This Forward cannot be broken.\" and \"This Forward cannot be returned to its owner's hand by your opponent's Summons or abilities.\"",
+  "text": "When Cloud enters the field, until the end of the turn, all the Forwards you control gain +3000 power and Brave.[[br]]At the beginning of the Attack Phase during each of your turns, choose 1 Forward you control. Until the end of the turn, it gains \"This Forward cannot be broken.\" and \"This Forward cannot be returned to its owner's hand by your opponent's Summons or abilities.\"",
   "fr": {
    "name": "Cloud",
    "type": "Avant",
    "job": "Guerrier",
-   "text": "Lorsque Cloud entre sur le terrain, jusqu'à la fin du tour, tous les Avants que vous contrôlez gagnent +1000 de force et Bravoure.[[br]]Au début de l'Attack Phase durant chacun de vos tours, choisissez 1 Avant que vous contrôlez. Jusqu'à la fin du tour, il gagne \"Cet Avant ne peut pas être détruit.\" et \"Cet Avant ne peut pas être renvoyé dans la main de son propriétaire par des Invocations ou compétences de votre adversaire.\""
+   "text": "Lorsque Cloud entre sur le terrain, jusqu'à la fin du tour, tous les Avants que vous contrôlez gagnent +3000 de force et Bravoure.[[br]]Au début de l'Attack Phase durant chacun de vos tours, choisissez 1 Avant que vous contrôlez. Jusqu'à la fin du tour, il gagne \"Cet Avant ne peut pas être détruit.\" et \"Cet Avant ne peut pas être renvoyé dans la main de son propriétaire par des Invocations ou compétences de votre adversaire.\""
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards (2026-10-18).",
+  "image": {
+   "en": "27-124S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656617
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards (2026-10-18).",
   "verified": false
  },
  {
@@ -1383,8 +1398,13 @@
    "job": "Membre du clan Hardi",
    "text": "Lorsque Lusso inflige des dégâts à un Avant, détruisez-le.[[br]]Lorsque Lusso inflige des dégâts à votre adversaire, sélectionnez jusqu'à 2 des 2 actions suivantes.[[br]]\"Choisissez 1 Avant. Infligez-lui 3000 points de dégâts.\"[[br]]\"Choisissez 1 Personnage dans votre Break Zone. Ajoutez-le à votre main.\""
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards; French name from the other Luso cards (2026-10-18).",
+  "image": {
+   "en": "27-125S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656625
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards; French name from the other Luso cards (2026-10-18).",
   "verified": false
  },
  {
@@ -1419,8 +1439,13 @@
    "job": "Reine",
    "text": "Aucune carte dans votre Break Zone ne peut être retirée du jeu par des Invocations ou compétences de votre adversaire.[[br]]《0》 : Choisissez 1 Avant autre que [[i]]Nom de Carte Sphène[[/]] mis du terrain dans votre Break Zone durant ce tour. Ajoutez-le à votre main. Vous ne pouvez utiliser cette compétence que durant votre tour et qu'une seule fois par tour."
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards; French name from Final Fantasy XIV in French, no French card of Sphene exists yet (2026-10-18).",
+  "image": {
+   "en": "27-126S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656626
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards; French name from Final Fantasy XIV in French, no French card of Sphene exists yet (2026-10-18).",
   "verified": false
  },
  {
@@ -1456,8 +1481,13 @@
    "job": "Ravageur/L'Cie",
    "text": "[[ex]]EX BURST[[/]] Lorsque Lightning entre sur le terrain, choisissez 1 Avant de coût 4 ou moins contrôlé par votre adversaire. Détruisez-le.[[br]]Lorsqu'un Avant contrôlé par votre adversaire est mis du terrain dans la Break Zone, choisissez 1 Avant que vous contrôlez. Il gagne Booster jusqu'à la fin du tour."
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data, listed as \"Lightning EX\"), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards (2026-10-18).",
+  "image": {
+   "en": "27-127S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656628
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data, listed as \"Lightning EX\"), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards (2026-10-18).",
   "verified": false
  },
  {
@@ -1492,8 +1522,13 @@
    "job": "Chevalier",
    "text": "Si Charlotte reçoit des dégâts, réduisez-les de 1000 à la place.[[br]]Les Avants que vous contrôlez ne peuvent pas être choisis par des Invocations de coût 1 de votre adversaire.[[br]]Les Avants contrôlés par votre adversaire ne peuvent pas utiliser de compétences d'action."
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards (2026-10-18).",
+  "image": {
+   "en": "27-128S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656633
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards (2026-10-18).",
   "verified": false
  },
  {
@@ -1528,8 +1563,13 @@
    "job": "Albatros",
    "text": "Lorsque Yuna entre sur le terrain, vous pouvez jouer 1 Avant de coût 3 de votre main sur le terrain.[[br]]Lorsque Yuna attaque, regardez les 3 cartes du dessus de votre deck. Ajoutez 1 carte provenant d'elles à votre main et placez les autres cartes sous votre deck dans n'importe quel ordre."
   },
-  "image": null,
-  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording; French written by hand after the official French texts of similar cards (2026-10-18).",
+  "image": {
+   "en": "27-129S_eg.jpg"
+  },
+  "imageSource": {
+   "tcgplayer": 656634
+  },
+  "source": "TCGCSV group 24472 (TCGplayer data), English corrected by hand to the official wording and checked against the card scan (TCGplayer image, 2026-10-18); French written by hand after the official French texts of similar cards (2026-10-18).",
   "verified": false
  }
 ]

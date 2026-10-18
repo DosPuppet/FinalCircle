@@ -6,7 +6,8 @@
  * the same host, comma-separated), FC_MAX_ROOMS_PER_IP (4), FC_MAX_HEAP_MB (heap beyond which no room is created, 384),
  * FC_AI_WORKERS (workers of the AI seats, at most 2 by default; 0: no online AI), FC_MAX_AI_ROOMS (most open rooms with
  * an AI, 12), FC_MAX_RSS_MB (process memory beyond which no room with an AI is created, 640), FC_IMAGE_CACHE (disk cache
- * of the card images, outside Git; none by default: nginx caches them in production).
+ * of the card images, outside Git; none by default: nginx caches them in production), FC_IMAGES_DIR (images missing from
+ * the official CDN, stored on the server by `tools/missing-images.ts`; `data/images` by default).
  */
 import { networkInterfaces } from "node:os";
 import { dirname, join } from "node:path";
@@ -21,7 +22,10 @@ const server = await startServer({
   port: num(process.env.PORT) ?? 8788,
   host,
   staticDir,
-  images: createImageRelay(process.env.FC_IMAGE_CACHE ? { cacheDir: process.env.FC_IMAGE_CACHE } : {}),
+  images: createImageRelay({
+    storeDir: process.env.FC_IMAGES_DIR || join(process.cwd(), "data", "images"),
+    ...(process.env.FC_IMAGE_CACHE ? { cacheDir: process.env.FC_IMAGE_CACHE } : {}),
+  }),
   ...(num(process.env.FC_AI_WORKERS) !== undefined ? { aiWorkers: num(process.env.FC_AI_WORKERS) } : {}),
   allowedOrigins: (process.env.FC_ORIGINS ?? "")
     .split(",")

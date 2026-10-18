@@ -4,7 +4,9 @@
  * that asks too fast: the relay fetches one image at a time, at least `minGapMs` apart, merges identical requests,
  * remembers failures, and stops fetching for `breakerMs` after a refusal (the client then draws the card from its text).
  * Only card image paths are relayed (allow list): never an open proxy. Images are never stored in the repository; the
- * optional disk cache lives outside Git (`data/cache/images`), nginx caches them in production.
+ * optional disk cache lives outside Git (`data/cache/images`), nginx caches them in production. Cards whose image the
+ * CDN lacks (the Starter Set 2025 exclusives) are served from a local store kept on the server (`data/images`, filled
+ * by `tools/missing-images.ts`), before the cache and the CDN.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -15,6 +17,8 @@ export const CDN = "https://fftcg.cdn.sewest.net/images/cards";
 export interface RelayOptions {
   /** Disk cache (development); absent: none. */
   cacheDir?: string;
+  /** Images missing from the CDN, stored on the server (`data/images`, outside Git); absent: none. */
+  storeDir?: string;
   /** Minimum gap between two requests to the CDN. */
   minGapMs?: number;
   /** Pause after the CDN refused (429, Cloudflare challenge). */
@@ -82,6 +86,8 @@ export function createImageRelay(opts: RelayOptions = {}) {
     /** An image by its relay path (`/full/1-001H_fr.jpg`). */
     get(path: string): Promise<RelayResult> {
       if (!FFIMG_PATH.test(path)) return Promise.resolve({ status: 404 });
+      const stored = opts.storeDir ? join(opts.storeDir, path) : null;
+      if (stored && existsSync(stored)) return Promise.resolve({ status: 200, body: readFileSync(stored) });
       const file = cacheFile(path);
       if (file && existsSync(file)) return Promise.resolve({ status: 200, body: readFileSync(file) });
       const until = failed.get(path);

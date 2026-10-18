@@ -5,10 +5,14 @@ import { defineConfig, type Plugin } from "vite";
 
 /**
  * Card images in development: `/ffimg/` through the same serialized relay as the game server (never the browser to
- * the CDN), with a disk cache outside Git (`data/cache/images`).
+ * the CDN), with a disk cache outside Git (`data/cache/images`) and the store of the images the CDN lacks (`data/images`).
  */
 function imageRelay(): Plugin {
-  const relay = createImageRelay({ cacheDir: fileURLToPath(new URL("../../data/cache/images", import.meta.url)) });
+  const relay = createImageRelay({
+    cacheDir: fileURLToPath(new URL("../../data/cache/images", import.meta.url)),
+    // Images missing from the CDN (the Starter Set 2025 exclusives), fetched once by `tools/missing-images.ts`.
+    storeDir: fileURLToPath(new URL("../../data/images", import.meta.url)),
+  });
   return {
     name: "finalcircle-image-relay",
     configureServer(server) {

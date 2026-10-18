@@ -14,12 +14,12 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lot **A0 (scaffold) done**: workspaces, configs, verify, CI, documents. Next: A1 (rules digest, `docs/rules.md`).
+- PLAN-A lots **A0 (scaffold)** and **A1 (rules digest)** done. Next: A2 (engine infrastructure copied from Planecircle).
 
 ## Documents
 
 - `docs/plans/PLAN-A.md`: Milestone 1, lots A0 to A13; tracking at the end.
-- `docs/rules.md` (lot A1): digest of the Comprehensive Rules v3.3 by section, and the interpretations taken where the rules are unclear. **Read before changing the engine.**
+- `docs/rules.md`: digest of the Comprehensive Rules v3.3 by section, the interpretations taken where the rules are unclear (I1…), the English–French glossary. **Read before changing the engine.** Exact wording: `npx tsx tools/rules-text.ts [--fetch]` writes the PDF and its text to `data/cache/rules/` (outside Git).
 - `docs/approximations.md`: known approximations. **Every new approximation is added there**; every approximation lifted is removed from it.
 - `docs/history.md`: milestones and chronology; `docs/backlog.md`: open items.
 

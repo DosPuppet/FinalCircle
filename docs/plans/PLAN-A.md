@@ -144,3 +144,4 @@ Milestone 1 effects: damage / damageAll / power / setPower / gain (keywords, quo
 | Lot | Status | Date | Notes |
 |---|---|---|---|
 | A0 | done | 2026-10-18 | git repository (branch `dev`, no commit yet), npm workspaces `@finalcircle/{engine,cards,ai,client,server}`, configs from Planecircle (`tsconfig*`, `biome.json`, `vitest.config.ts` with `passWithNoTests` until A2), `tools/verify.ts` (steps left out until their tools exist), CI, `CLAUDE.md`, `README.md` with the legal notice, `docs/{history,backlog,approximations}.md`. The `vite/client` types join `tsconfig.json` with the client in A8. |
+| A1 | done | 2026-10-18 | `docs/rules.md`: CR v3.3 restated by section with the engine file of each area, interpretations I1–I23 (I21 party with Multi-Element Forwards, I22 element of ability costs, I23 EX Burst targets added to the plan's twenty), glossary seed. `tools/rules-text.ts` extracts the PDF's text into `data/cache/rules/` (outside Git). |

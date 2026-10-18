@@ -103,3 +103,22 @@ export function SymbolBadge({ text, kind, size = 16 }: { text: string; kind: "sp
     </svg>
   );
 }
+
+/** An attacking Forward (badge, attack info). */
+export function SwordIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg className="sword-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20.5 3.5 10 14l-1.5-1.5L19 2h1.5Z" fill="currentColor" />
+      <path d="m6 13 5 5-1.4 1.4-1.8-1.8-3.3 3.3-1.4-1.4 3.3-3.3-1.8-1.8Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** A blocking Forward (attack info). */
+export function ShieldIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg className="shield-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5Z" fill="currentColor" />
+    </svg>
+  );
+}

@@ -8,9 +8,10 @@ import { Dialog } from "../Dialog";
 import { faceName, PHASE_LABEL, STEP_LABEL } from "../i18n";
 import { LangToggle } from "../LangToggle";
 import { useLocalize, useT } from "../localize";
-import { chooseOf, mainAction, pickOf, priorityActions, useGame } from "../store";
+import { attackGroupOk, chooseOf, mainAction, pickOf, priorityActions, useGame } from "../store";
 import { textIn } from "../translate";
 import { Card, type Glow } from "./Card";
+import { ShieldIcon, SwordIcon } from "./ElementIcon";
 import { PaymentTray } from "./PaymentTray";
 import { Preview } from "./Preview";
 
@@ -43,7 +44,9 @@ function useGlow(): (o: ObjectView) => Glow {
     const p = view.pending;
     if (p?.kind === "declareAttack" && p.player === view.viewer) {
       if (party.includes(o.id)) return "selected";
-      if ((p.single ?? []).includes(o.id)) return "playable";
+      // Can join the Forwards already selected (a party), or can attack but would start a new selection.
+      if (attackGroupOk(p, [...party, o.id])) return "playable";
+      if (attackGroupOk(p, [o.id])) return "source";
     }
     if (p?.kind === "declareBlock" && p.player === view.viewer) {
       if (blocker === o.id) return "selected";
@@ -67,7 +70,7 @@ function FieldSide({ view, player, mine }: { view: GameView; player: PlayerId; m
   const row = (list: ObjectView[], kind: "forwards" | "backups") => (
     <div className={`field-row ${kind}`} data-tuto={mine ? `my-${kind}` : `opp-${kind}`}>
       {list.map((o) => (
-        <Card key={o.id} obj={o} face={faces[o.defId]} glow={glow(o)} onClick={() => clickCard(o.id)} />
+        <Card key={o.id} obj={o} face={faces[o.defId]} glow={glow(o)} onClick={() => clickCard(o.id)} layoutId={o.uid} />
       ))}
       {kind === "backups"
         ? Array.from({ length: Math.max(0, 5 - list.length) }, (_, i) => <div key={`slot${i}`} className="backup-slot" />)
@@ -140,7 +143,7 @@ function Zones({ view, player, mine }: { view: GameView; player: PlayerId; mine:
           title={t("Break Zone")}
           onClick={() => setOpen("break")}
         >
-          {top ? <Card obj={top} face={faces[top.defId]} /> : <div className="pile-empty" />}
+          {top ? <Card obj={top} face={faces[top.defId]} layoutId={top.uid} /> : <div className="pile-empty" />}
           <span className="pile-count">{pl.breakZone.length}</span>
         </button>
         <button
@@ -196,6 +199,73 @@ function PhaseTrack({ view }: { view: GameView }) {
   );
 }
 
+/**
+ * The attack in progress (CR 10.1): who attacks and who blocks; while the player chooses a blocker, what the blocks
+ * would break (battle damage both ways, a party's total power; First Strike and effects left out: a preview).
+ */
+function AttackInfo({ view }: { view: GameView }) {
+  const faces = useGame((s) => s.faces);
+  const blocker = useGame((s) => s.blocker);
+  const lang = useGame((s) => s.lang);
+  const t = useT();
+  const p = view.pending;
+  if (p?.kind === "declareAttack" && p.player === view.viewer)
+    return (
+      <div className="attack-info hint" data-tuto="attack-hint">
+        {t("Click a Forward to attack with it; several Forwards of the same Element attack as a party.")}
+      </div>
+    );
+  const attack = view.attack;
+  if (!attack?.attackers.length) return null;
+  const byId = (id: string | null) => view.field.find((o) => o.id === id);
+  const attackers = attack.attackers.map(byId).filter((o): o is ObjectView => !!o);
+  const total = attackers.reduce((a, o) => a + (o.power ?? 0), 0);
+  const names = attackers.map((o) => faceName(faces[o.defId], lang)).join(" + ");
+  const chosen = p?.kind === "declareBlock" && p.player === view.viewer ? byId(blocker) : byId(attack.blocker);
+  let outcome = "";
+  if (chosen && p?.kind === "declareBlock") {
+    const bp = chosen.power ?? 0;
+    const blockerBroken = total >= bp - chosen.damage;
+    // A lone attacker takes the blocker's whole power; a party splits it (CR 10.1.4.2.1): none is sure to be broken.
+    const single = attackers.length === 1 ? attackers[0] : undefined;
+    const attackerBroken = !!single && bp >= (single.power ?? 0) - single.damage;
+    outcome =
+      blockerBroken && attackerBroken
+        ? t("Both Forwards would be broken")
+        : blockerBroken
+          ? t("{card} would be broken", { card: faceName(faces[chosen.defId], lang) })
+          : attackerBroken && single
+            ? t("{card} would be broken", { card: faceName(faces[single.defId], lang) })
+            : t("No Forward would be broken");
+  }
+  return (
+    <div className="attack-info" data-tuto="attack-info">
+      <span className="attackers">
+        <SwordIcon /> {names} <b>{total}</b>
+      </span>
+      {chosen ? (
+        <span className="blocker">
+          <ShieldIcon /> {faceName(faces[chosen.defId], lang)} <b>{chosen.power ?? 0}</b>
+        </span>
+      ) : null}
+      {outcome ? <span className="outcome">{outcome}</span> : null}
+    </div>
+  );
+}
+
+/** An EX Burst of the opponent, shown for a moment over the board. */
+function ExFlash() {
+  const flash = useGame((s) => s.flash);
+  const faces = useGame((s) => s.faces);
+  if (!flash) return null;
+  return (
+    <div className="ex-flash" key={flash.at} aria-hidden="true">
+      <span className="ex-title">EX BURST</span>
+      <Card face={faces[flash.defId]} size="full" />
+    </div>
+  );
+}
+
 function StackView({ view }: { view: GameView }) {
   const faces = useGame((s) => s.faces);
   const lang = useGame((s) => s.lang);
@@ -228,7 +298,15 @@ function Hand({ view }: { view: GameView }) {
   return (
     <div className="hand" data-tuto="hand">
       {view.hand.map((o) => (
-        <Card key={o.id} obj={o} face={faces[o.defId]} glow={glow(o)} onClick={() => clickCard(o.id)} className="hand-card" />
+        <Card
+          key={o.id}
+          obj={o}
+          face={faces[o.defId]}
+          glow={glow(o)}
+          onClick={() => clickCard(o.id)}
+          className="hand-card"
+          layoutId={o.uid}
+        />
       ))}
     </div>
   );
@@ -347,6 +425,7 @@ export function Board() {
         <FieldSide view={view} player={opp} mine={false} />
         <div className="center-strip">
           <PhaseTrack view={view} />
+          <AttackInfo view={view} />
           <StackView view={view} />
           <MainButton view={view} />
           <Settings />
@@ -356,6 +435,7 @@ export function Board() {
         <Hand view={view} />
       </main>
       <PaymentTray />
+      <ExFlash />
     </div>
   );
 }

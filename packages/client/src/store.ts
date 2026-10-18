@@ -19,6 +19,7 @@ import {
   msg,
   type ObjectId,
   type Payment,
+  type PendingView,
   RulesError,
 } from "@finalcircle/engine";
 import { create } from "zustand";
@@ -112,6 +113,10 @@ interface Store {
   selection: string[];
   /** Updates being shown one after the other (the AI's actions are paced). */
   busy: boolean;
+  /** Damage just dealt to Forwards (it pops out on the card); `at` tells two hits apart. */
+  hits: Record<ObjectId, { amount: number; at: number }>;
+  /** An EX Burst of the opponent, revealed for a moment (CR 6.5.2.1). */
+  flash: { defId: string; at: number } | null;
 
   setLang(lang: Lang): void;
   setAiLevel(level: AiLevel): void;
@@ -231,12 +236,22 @@ export const useGame = create<Store>((set, get) => {
     const lines = describeEvents(m.events, m.view, faces, s.lang);
     // A new decision clears what was being chosen for the previous one.
     const changed = JSON.stringify(s.view?.pending) !== JSON.stringify(m.view.pending);
+    const at = Date.now();
+    const hits: Store["hits"] = {};
+    for (const e of m.events) if (e.type === "damage" && e.amount > 0) hits[e.target] = { amount: e.amount, at };
+    const ex = m.events.find((e) => e.type === "exBurst" && e.used && e.player !== m.view.viewer);
     set({
       view: m.view,
       faces,
       log: [...s.log, ...lines].slice(-400),
+      ...(Object.keys(hits).length ? { hits } : {}),
+      ...(ex?.type === "exBurst" && !fastMode() ? { flash: { defId: ex.defId, at } } : {}),
       ...(changed ? { casting: null, party: [], blocker: null, abilityMenu: null, selection: [] } : {}),
     });
+    if (ex && !fastMode())
+      setTimeout(() => {
+        if (get().flash?.at === at) set({ flash: null });
+      }, 1800);
   };
 
   /** Shows the queued updates one by one; an AI action stays on screen for a moment. */
@@ -300,6 +315,8 @@ export const useGame = create<Store>((set, get) => {
     party: [],
     blocker: null,
     hover: null,
+    hits: {},
+    flash: null,
     abilityMenu: null,
     selection: [],
     busy: false,
@@ -454,9 +471,10 @@ export const useGame = create<Store>((set, get) => {
       }
       const p = v.pending;
       if (p?.kind === "declareAttack" && p.player === v.viewer) {
-        const can = [...(p.single ?? []), ...(p.parties ?? []).flatMap((x) => x.members)];
-        if (!can.includes(id)) return;
-        set({ party: s.party.includes(id) ? s.party.filter((x) => x !== id) : [...s.party, id] });
+        if (s.party.includes(id)) set({ party: s.party.filter((x) => x !== id) });
+        // A Forward that cannot join the Forwards already selected starts a new selection.
+        else if (attackGroupOk(p, [...s.party, id])) set({ party: [...s.party, id] });
+        else if (attackGroupOk(p, [id])) set({ party: [id] });
         return;
       }
       if (p?.kind === "declareBlock" && p.player === v.viewer) {
@@ -557,6 +575,16 @@ export function flushSave(): void {
 }
 
 /** What the main button does now, and its label (Arena-style). */
+/**
+ * Whether Forwards can attack together (CR 10.1.2.1): one that can attack alone, or two or more of a party the engine
+ * offers (they share an element).
+ */
+export function attackGroupOk(p: Extract<PendingView, { kind: "declareAttack" }>, ids: ObjectId[]): boolean {
+  if (ids.length === 1)
+    return (p.single ?? []).includes(ids[0] as ObjectId) || (p.parties ?? []).some((g) => g.members.includes(ids[0] as ObjectId));
+  return ids.length > 1 && (p.parties ?? []).some((g) => ids.every((id) => g.members.includes(id)));
+}
+
 export function mainAction(
   view: GameView | null,
   party: ObjectId[],

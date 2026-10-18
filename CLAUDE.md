@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0 (scaffold)** and **A1 (rules digest)** done. Next: A2 (engine infrastructure copied from Planecircle).
+- PLAN-A lots **A0 (scaffold)**, **A1 (rules digest)** and **A2 (engine model and infrastructure)** done. Next: A3 (card data and deck legality).
 
 ## Documents
 

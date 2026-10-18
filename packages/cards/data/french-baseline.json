@@ -1,0 +1,10 @@
+{
+ "allowed": {
+  "CLAUDE.md": "lists the official French game terms the interface must use",
+  "docs/plans/PLAN-A.md": "quotes the official French game terms and data fields while planning their use",
+  "docs/rules.md": "English–French glossary of the game terms",
+  "packages/cards/test/frenchSource.ts": "French word list of the detector",
+  "packages/engine/test/text.test.ts": "French catalog entries as test data"
+ },
+ "files": []
+}

@@ -55,7 +55,7 @@ const available = (s: Step) => !s.needs || existsSync(s.needs);
 function run(step: Step): Promise<Result> {
   const t0 = performance.now();
   return new Promise((resolve) => {
-    const child = spawn("bash", ["-c", step.cmd], { env: { ...process.env, FORCE_COLOR: "0" } });
+    const child = spawn("bash", ["-c", step.cmd], { env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
     let out = "";
     child.stdout.on("data", (d) => {
       out += d;
@@ -97,7 +97,7 @@ async function runFuzz(series: { name: string; args: string }[]): Promise<boolea
   writeFileSync(file, JSON.stringify(series));
   return new Promise((resolve) => {
     const child = spawn("npx", ["tsx", "tools/fuzz.ts", "--batch", file, "--jobs", String(jobs)], {
-      env: { ...process.env, FORCE_COLOR: "0" },
+      env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" },
     });
     let ok = true;
     let buf = "";

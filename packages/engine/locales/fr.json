@@ -1,0 +1,13 @@
+{
+ "At least {n} for each": "Au moins {n} pour chacun",
+ "Choice not among the options": "Choix hors des options",
+ "Choose between {min} and {max}": "Choisissez entre {min} et {max}",
+ "Choose exactly {n}": "Choisissez exactement {n}",
+ "Divide exactly {n}": "Répartissez exactement {n}",
+ "Divide in steps of {n}": "Répartissez par tranches de {n}",
+ "Duplicate choice": "Choix en double",
+ "Expected a number between {min} and {max}": "Nombre attendu entre {min} et {max}",
+ "Expected a yes/no answer": "Réponse oui/non attendue",
+ "Invalid division": "Répartition invalide",
+ "Invalid order": "Ordre invalide"
+}

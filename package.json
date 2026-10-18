@@ -20,7 +20,8 @@
     "fuzz": "tsx tools/fuzz.ts",
     "golden": "tsx tools/golden.ts",
     "arena": "tsx tools/ai-arena.ts",
-    "bench": "tsx tools/bench.ts"
+    "bench": "tsx tools/bench.ts",
+    "server": "npm run start -w @finalcircle/server"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",

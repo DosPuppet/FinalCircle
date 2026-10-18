@@ -6,11 +6,19 @@
   "exports": {
     ".": "./src/index.ts",
     "./imageRelay": "./src/imageRelay.ts",
-    "./locales/fr.json": "./locales/fr.json"
+    "./locales/fr.json": "./locales/fr.json",
+    "./protocol": "./src/protocol.ts"
   },
   "dependencies": {
     "@finalcircle/ai": "^0.1.0",
     "@finalcircle/cards": "^0.1.0",
-    "@finalcircle/engine": "^0.1.0"
+    "@finalcircle/engine": "^0.1.0",
+    "ws": "^8.21.3"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
   }
 }

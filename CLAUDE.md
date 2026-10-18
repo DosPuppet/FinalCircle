@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality) , **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested) and **A7** (AI levels, fuzz, golden games) done. Next: A8 (game screen).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality) , **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested) **A7** (AI levels, fuzz, golden games) and **A8a** (game screen: board, payment, prompts) done. Next: A8b (attack, block and EX Burst interactions, animations), then A8c (log, sounds, polish, smokes).
 
 ## Documents
 

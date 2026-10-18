@@ -7,6 +7,8 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npm run dev -w @finalcircle/client",
+    "build": "npm run build -w @finalcircle/client",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json",
@@ -24,7 +26,7 @@
     "@biomejs/biome": "^2.5.14",
     "@types/node": "^26.6.2",
     "esbuild": "^0.28.2",
-    "playwright": "^1.63.0",
+    "playwright": "~1.63.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"

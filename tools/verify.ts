@@ -140,7 +140,7 @@ async function changedFiles(): Promise<string[]> {
 
 async function viteUp(): Promise<boolean> {
   try {
-    const res = await fetch("http://localhost:5173/", { signal: AbortSignal.timeout(2000) });
+    const res = await fetch("http://localhost:5174/", { signal: AbortSignal.timeout(2000) });
     return res.ok;
   } catch {
     return false;
@@ -248,7 +248,7 @@ if (!anyUi) {
     // Display in both languages: two games in the browser, alone (in a queue, it slowed the others into timeouts).
     ok = (await group([LANG_SMOKE])) && ok;
   } else {
-    console.log("⚠️  interface tests skipped: Vite does not answer on http://localhost:5173 (run npm run dev)");
+    console.log("⚠️  interface tests skipped: Vite does not answer on http://localhost:5174 (run npm run dev)");
     ok = false;
   }
 } else {

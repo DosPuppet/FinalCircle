@@ -6,8 +6,10 @@ import { useGame } from "../store";
 import { textIn } from "../translate";
 import { Card } from "./Card";
 
-export function Preview() {
-  const hover = useGame((s) => s.hover);
+/** The card under the pointer, or `id` (the card held under a finger). */
+export function Preview({ id }: { id?: string | null }) {
+  const hovered = useGame((s) => s.hover);
+  const hover = id === undefined ? hovered : id;
   const view = useGame((s) => s.view);
   const faces = useGame((s) => s.faces);
   const lang = useGame((s) => s.lang);

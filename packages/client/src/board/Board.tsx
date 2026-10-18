@@ -4,6 +4,7 @@
  */
 import type { AttackStep, CardFace, GameView, ObjectView, Phase, PlayerId } from "@finalcircle/engine";
 import { useEffect, useRef, useState } from "react";
+import { SoundControl } from "../audio/SoundControl";
 import { Dialog } from "../Dialog";
 import { faceName, PHASE_LABEL, STEP_LABEL } from "../i18n";
 import { LangToggle } from "../LangToggle";
@@ -253,6 +254,20 @@ function AttackInfo({ view }: { view: GameView }) {
   );
 }
 
+/** Touch screens: the card held under a finger, large over the board; a tap closes it. */
+function TouchPreview() {
+  const peek = useGame((s) => s.peek);
+  const setPeek = useGame((s) => s.setPeek);
+  if (!peek) return null;
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: a tap anywhere closes the preview, as Escape does (App.tsx)
+    // biome-ignore lint/a11y/useKeyWithClickEvents: Escape closes it (App.tsx)
+    <div className="touch-preview" onClick={() => setPeek(null)}>
+      <Preview id={peek} />
+    </div>
+  );
+}
+
 /** An EX Burst of the opponent, shown for a moment over the board. */
 function ExFlash() {
   const flash = useGame((s) => s.flash);
@@ -382,6 +397,7 @@ function Settings() {
       {open ? (
         <div className="settings-panel">
           <LangToggle />
+          <SoundControl />
           <label>
             <input type="checkbox" checked={!!settings.autoPay} onChange={(e) => setSettings({ autoPay: e.target.checked })} />
             {t("Pay automatically")}
@@ -436,6 +452,7 @@ export function Board() {
       </main>
       <PaymentTray />
       <ExFlash />
+      <TouchPreview />
     </div>
   );
 }

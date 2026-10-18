@@ -5,6 +5,7 @@
 import type { AiLevel } from "@finalcircle/ai";
 import { DECKS, type DeckList } from "@finalcircle/cards";
 import { useState } from "react";
+import { SoundControl } from "../audio/SoundControl";
 import { ElementIcon } from "../board/ElementIcon";
 import { imagesOn, setImagesOn } from "../images";
 import { LangToggle } from "../LangToggle";
@@ -56,7 +57,10 @@ export function Lobby() {
       <header className="lobby-head">
         <h1>FinalCircle</h1>
         <p className="tagline">{t("Play the FINAL FANTASY Trading Card Game against the AI.")}</p>
-        <LangToggle />
+        <div className="lobby-settings">
+          <LangToggle />
+          <SoundControl />
+        </div>
       </header>
       {notice ? (
         <div className="notice-line" role="status">

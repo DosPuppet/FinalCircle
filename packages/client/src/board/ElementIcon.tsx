@@ -3,6 +3,10 @@
  * swirl, a rock, a bolt, a drop, a star and a crescent, on the element's color.
  */
 import type { Element } from "@finalcircle/engine";
+import { ELEMENT_LABEL } from "../i18n";
+import { useT } from "../localize";
+import { useGame } from "../store";
+import { textIn } from "../translate";
 
 export const ELEMENT_COLOR: Record<Element, string> = {
   fire: "#d8452f",
@@ -29,6 +33,7 @@ const GLYPH: Record<Element, string> = {
 const STROKED: ReadonlySet<Element> = new Set(["ice", "wind"]);
 
 export function ElementIcon({ element, size = 16, title }: { element: Element; size?: number; title?: string }) {
+  const lang = useGame((s) => s.lang);
   const fg = element === "light" ? "#7a6a2a" : "#fff";
   const stroked = STROKED.has(element);
   return (
@@ -38,7 +43,7 @@ export function ElementIcon({ element, size = 16, title }: { element: Element; s
       height={size}
       viewBox="0 0 24 24"
       role="img"
-      aria-label={title ?? element}
+      aria-label={title ?? textIn(lang, ELEMENT_LABEL[element])}
     >
       {title ? <title>{title}</title> : null}
       <circle cx="12" cy="12" r="11.5" fill={ELEMENT_COLOR[element]} stroke="rgba(0,0,0,.35)" />
@@ -68,8 +73,9 @@ export function GenericCp({ n, size = 16 }: { n: string; size?: number }) {
 
 /** 《ダル》: dull the card. */
 export function DullIcon({ size = 16 }: { size?: number }) {
+  const t = useT();
   return (
-    <svg className="dull-icon" width={size} height={size} viewBox="0 0 24 24" role="img" aria-label="Dull">
+    <svg className="dull-icon" width={size} height={size} viewBox="0 0 24 24" role="img" aria-label={t("ctx:symbol|Dull")}>
       <circle cx="12" cy="12" r="11.5" fill="#31353d" stroke="rgba(0,0,0,.35)" />
       <rect
         x="5"

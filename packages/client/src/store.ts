@@ -23,6 +23,8 @@ import {
   RulesError,
 } from "@finalcircle/engine";
 import { create } from "zustand";
+import { soundsFor } from "./audio/eventSounds";
+import { playSound, preloadSounds } from "./audio/sfx";
 import { fastMode } from "./fast";
 import { describeEvents, type LogLine } from "./i18n";
 import type { FromWorker } from "./protocol";
@@ -107,6 +109,8 @@ interface Store {
   blocker: ObjectId | null;
   /** The card under the pointer (preview). */
   hover: string | null;
+  /** The card held under a finger (touch screens): shown large over the board until a tap. */
+  peek: string | null;
   /** The ability chooser of a card with several abilities. */
   abilityMenu: ObjectId | null;
   /** Options picked for the pending question (cards, labels) or the cards to discard. */
@@ -128,6 +132,7 @@ interface Store {
   decide(d: Decision): void;
   endTurn(hard?: boolean): void;
   setHover(id: string | null): void;
+  setPeek(id: string | null): void;
   /** A card of the hand or the field clicked: cast, use an ability, attack, block, or a target or payment. */
   clickCard(id: ObjectId): void;
   beginCast(option: Extract<ActionOption, { type: "cast" | "activate" }>): void;
@@ -234,6 +239,7 @@ export const useGame = create<Store>((set, get) => {
     const s = get();
     const faces = { ...s.faces, ...m.faces };
     const lines = describeEvents(m.events, m.view, faces, s.lang);
+    for (const cue of soundsFor(m.events, m.view, faces)) playSound(cue.key, cue);
     // A new decision clears what was being chosen for the previous one.
     const changed = JSON.stringify(s.view?.pending) !== JSON.stringify(m.view.pending);
     const at = Date.now();
@@ -278,6 +284,7 @@ export const useGame = create<Store>((set, get) => {
         return;
       case "error":
         inFlight = false;
+        playSound("error");
         get().notify(m.message);
         return;
       case "saved":
@@ -315,6 +322,7 @@ export const useGame = create<Store>((set, get) => {
     party: [],
     blocker: null,
     hover: null,
+    peek: null,
     hits: {},
     flash: null,
     abilityMenu: null,
@@ -363,6 +371,7 @@ export const useGame = create<Store>((set, get) => {
       inFlight = false;
       const session = new LocalSession(onMessage);
       const level = get().aiLevel;
+      preloadSounds();
       writer?.stop();
       writer = opts.sandbox ? null : new SaveWriter(() => ({ aiLevel: level, log: get().log }));
       set({ session, screen: "game", view: null, faces: {}, log: [], casting: null, party: [], blocker: null });
@@ -434,6 +443,9 @@ export const useGame = create<Store>((set, get) => {
     },
     setHover(id) {
       if (get().hover !== id) set({ hover: id });
+    },
+    setPeek(id) {
+      set({ peek: id, ...(id ? { hover: id } : {}) });
     },
     clickCard(id) {
       const s = get();

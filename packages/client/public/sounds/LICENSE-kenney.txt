@@ -1,0 +1,6 @@
+FinalCircle sound effects: card samples from Kenney Vleugels' packs (www.kenney.nl)
+- Casino Audio (card-*.ogg); the other sounds of the game are synthesized: packages/client/src/audio/synth.ts
+
+License: Creative Commons Zero (CC0) — http://creativecommons.org/publicdomain/zero/1.0/
+"You may use these assets in personal and commercial projects.
+ Credit (Kenney or www.kenney.nl) would be nice but is not mandatory."

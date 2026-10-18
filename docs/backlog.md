@@ -14,3 +14,12 @@ Each item cites its origin (plan, lot). What was done is told in `docs/history.m
 | L3 status of the 27-xxxS starter cards | not stated by the official format page | A3 (override list) | open |
 | URLs of the official format and ban pages | for the weekly legality check | B4 | open |
 | L3 and reprints | some booster sets reprint older card numbers (Dreamlike Oceans has 7- and 24- cards); `validateDeck` reads L3 by serial number (the official wording) | B0 | to confirm with the official format page |
+
+## Interface
+
+| Item | Why | Needed by | Status |
+|---|---|---|---|
+| Replay viewer (record export, step through a finished game) | `ReplaySession` exists (A8), no screen opens it yet; `tools/replay-smoke.ts` checks the resumed saved game meanwhile | A9 (home screen) | open |
+| Card names in the log | hovering a card named in the log would show its preview (Planecircle's log does) | A8 polish | open |
+| Block preview with First Strike and effects | the preview compares powers only; First Strike, damage replacements and power changes on blocking are left out (labelled a preview) | after A10 | open |
+| Opponent's cards flying from their hand | hidden cards have no shared `uid` with the field, so they appear without a move | polish | open |

@@ -101,7 +101,12 @@ function PickPanel({ view, p, req }: { view: GameView; p: ChoiceView; req: Extra
         <p className="dim">{t("Click the highlighted cards — selection: {n} / {max}", { n: selection.length, max: req.max })}</p>
       )}
       <div className="prompt-actions">
-        <button type="button" className="btn ghost" onClick={() => setSelection(req.suggested.map(String))}>
+        <button
+          type="button"
+          className="btn ghost"
+          onClick={() => setSelection(req.suggested.map(String))}
+          data-testid="choice-suggest"
+        >
           {t("Suggestion")}
         </button>
         <button

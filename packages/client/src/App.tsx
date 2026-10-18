@@ -33,7 +33,10 @@ function useShortcuts() {
           e.preventDefault();
           s.endTurn(e.shiftKey);
         }
-      } else if (e.code === "Escape") s.cancelCast();
+      } else if (e.code === "Escape") {
+        if (s.peek) s.setPeek(null);
+        else s.cancelCast();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

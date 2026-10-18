@@ -81,10 +81,11 @@ export const Card = memo(function Card({
   layoutId?: string;
 }) {
   const setHover = useGame((s) => s.setHover);
+  const setPeek = useGame((s) => s.setPeek);
   const lang = useGame((s) => s.lang);
   const hidden = !face || obj?.defId === HIDDEN_CARD_ID;
   const id = obj?.id ?? face?.defId ?? "";
-  const longPress = useLongPress(() => setHover(id));
+  const longPress = useLongPress(() => setPeek(id));
   const modified = obj?.power !== undefined && face?.power !== undefined && obj.power !== face.power;
   const dull = !!obj?.dull;
   return (

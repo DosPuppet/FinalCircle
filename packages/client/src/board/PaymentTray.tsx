@@ -113,13 +113,14 @@ export function PaymentTray() {
         </div>
       ) : null}
       <div className="pay-actions">
-        <button type="button" className="btn ghost" onClick={cancel}>
+        <button type="button" className="btn ghost" onClick={cancel} data-testid="pay-cancel">
           {t("Cancel")}
         </button>
         <button
           type="button"
           className="btn ghost"
           onClick={() => useGame.setState({ casting: { ...casting, payment: option.suggested } })}
+          data-testid="pay-auto"
         >
           {t("Auto")}
         </button>

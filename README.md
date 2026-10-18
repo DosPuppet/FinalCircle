@@ -32,6 +32,8 @@ npm run verify -- --ci
 |---|---|
 | `npm run dev` | The game in the browser on http://localhost:5174 (card images through the local relay, cached in `data/cache/images`) |
 | `npx tsx tools/ui-smoke.ts [dir] [maxActions] [level] [lang]` | Plays a whole game against the AI in a browser (Vite running), screenshots in `test-results/ui` |
+| `npx tsx tools/{lang,mobile,replay}-smoke.ts` | Both languages, phones in portrait and landscape, a saved game resumed after a reload (Vite running; run by `verify` when the client changed) |
+| `npx tsx tools/bundle-size.ts` | Builds the client and checks each chunk against its budget |
 | `npm run verify -- --group <group>` | Check of a lot: types, Biome, tests (then, as they are written: coverage, bundle budget, fuzz, interface tests) |
 | `npm run verify -- --full` | Full check, at the end of a series or before a merge |
 | `npm run verify -- --ci` | Continuous-integration check (GitHub Actions, on every push) |

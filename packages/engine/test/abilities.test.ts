@@ -33,7 +33,7 @@ const fodderOf = (e: "water" | "lightning" | "earth") => forward(`t-fodder-${e}`
 function castCard(s: GameState, defId: string, extra: object = {}): GameState {
   const card = idOf(s, "p1", "hand", defId);
   const o = legalActions(s, "p1").find((x) => x.type === "cast" && x.card === card);
-  if (!o || o.type !== "cast") throw new Error(`${defId} cannot be cast`);
+  if (o?.type !== "cast") throw new Error(`${defId} cannot be cast`);
   return act(s, "p1", { type: "cast", card, payment: o.suggested, ...extra } as never);
 }
 

@@ -510,6 +510,8 @@ function GameOver({ view }: { view: GameView }) {
   const leave = useGame((s) => s.leaveGame);
   const exportGame = useGame((s) => s.exportGame);
   const replaying = useGame((s) => !!s.replay);
+  const online = useGame((s) => s.online);
+  const rematch = useGame((s) => s.rematch);
   const t = useT();
   const [shown, setShown] = useState(true);
   // biome-ignore lint/correctness/useExhaustiveDependencies: shown again when a game ends
@@ -537,10 +539,24 @@ function GameOver({ view }: { view: GameView }) {
         <button type="button" className="btn" onClick={() => exportGame("replay")} data-testid="watch-replay">
           {t("Watch the replay")}
         </button>
+        {online ? (
+          <button
+            type="button"
+            className="btn"
+            disabled={online.players.some((p) => p.seat === online.seat && p.rematch)}
+            onClick={rematch}
+            data-testid="rematch"
+          >
+            {online.players.some((p) => p.seat !== online.seat && p.rematch) ? t("Accept the rematch") : t("Rematch")}
+          </button>
+        ) : null}
         <button type="button" className="btn primary" onClick={leave}>
           {t("Back to the menu")}
         </button>
       </div>
+      {online?.players.some((p) => p.seat === online.seat && p.rematch) ? (
+        <p className="dim">{t("Waiting for your opponent's answer…")}</p>
+      ) : null}
     </Dialog>
   );
 }

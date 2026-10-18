@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { playSound, unlockAudio, useAudio } from "./audio/sfx";
 import { decodeDeck, sharedDeckData } from "./decks/share";
+import { codeFromUrl } from "./lobby/Online";
 import { flushSave, useGame } from "./store";
 import { lessonById } from "./tutorial/lessons";
 import { useTutorial } from "./tutorial/store";
@@ -54,7 +55,8 @@ if (deckData) {
     if (text) useGame.setState({ screen: "decks", editing: null, sharedDeck: text });
     else useGame.getState().notify(msg("This deck link is damaged."));
   });
-} else useGame.getState().resumeAtStartup();
+} else if (codeFromUrl() && !hasOnlineToken()) useGame.getState().openOnline();
+else useGame.getState().resumeAtStartup();
 window.addEventListener("pagehide", flushSave);
 
 // Sound: unlocked on the first gesture (browsers' autoplay policy), button clicks, M = mute.
@@ -73,3 +75,12 @@ document.addEventListener("keydown", (e) => {
   if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
   useAudio.getState().toggleMute();
 });
+
+/** An online game of this browser to resume (its reconnection token): it comes before an invitation link. */
+function hasOnlineToken(): boolean {
+  try {
+    return !!localStorage.getItem("finalcircle.online");
+  } catch {
+    return false;
+  }
+}

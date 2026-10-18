@@ -21,8 +21,17 @@ import {
   type ObjectId,
   type Payment,
   type PendingView,
+  RULES_VERSION,
   RulesError,
 } from "@finalcircle/engine";
+import {
+  type Clock,
+  type MatchInfo,
+  PROTOCOL_VERSION,
+  type RoomInfo,
+  type Seat,
+  type ServerMessage,
+} from "@finalcircle/server/protocol";
 import { create } from "zustand";
 import { soundsFor } from "./audio/eventSounds";
 import { playSound, preloadSounds } from "./audio/sfx";
@@ -33,11 +42,28 @@ import { describeEvents, type LogLine } from "./i18n";
 import type { FromWorker, ScenarioSpec } from "./protocol";
 import { clearSavedGame, loadSavedGame, SaveWriter } from "./savedGame";
 import { scenarioCards } from "./scenario";
-import { LocalSession, ReplaySession, type Session } from "./session";
+import { LocalSession, RemoteSession, ReplaySession, type Session } from "./session";
 import { type Lang, setTextLang, t } from "./translate";
 import type { PlayerIntent } from "./tutorial/runtime";
 
-export type Screen = "lobby" | "game" | "decks" | "tutorial";
+export type Screen = "lobby" | "game" | "decks" | "tutorial" | "online";
+
+/** Online game (a room on the server). */
+export interface OnlineState {
+  status: "connecting" | RoomInfo["status"];
+  match?: MatchInfo;
+  code: string | null;
+  seat: Seat | null;
+  players: RoomInfo["players"];
+  /** The opponent disconnected: deadline for their return (Date.now()). */
+  opponent: { connected: boolean; deadline: number | null };
+  /** Timer of the current decision; `deadline` in Date.now(). */
+  clock: (Clock & { deadline: number }) | null;
+  /** Server error (an English `msg` text, translated on display). */
+  error: string | null;
+  /** Connection to the server lost: reconnecting. */
+  reconnecting: boolean;
+}
 
 /** An option being cast or used: its modes, targets, payment, LB flips and same-name discard. */
 export interface Casting {
@@ -124,6 +150,8 @@ interface Store {
   peek: string | null;
   /** The ability chooser of a card with several abilities. */
   abilityMenu: ObjectId | null;
+  /** The online game in progress (null: a local game, a replay or no game). */
+  online: OnlineState | null;
   /** A recorded game being watched (`ReplaySession`): its position, point of view and automatic playback. */
   replay: {
     index: number;
@@ -169,6 +197,13 @@ interface Store {
   closeAbilityMenu(): void;
   /** The game's record: downloaded as a file, or opened in the replay viewer. */
   exportGame(then: "download" | "replay"): void;
+  openOnline(): void;
+  /** Online: creates a room (against a player, or the server's AI of a level). */
+  createRoom(name: string, deck: DeckEntries, opts: { format: Format; ai?: AiLevel }): void;
+  joinRoom(code: string, name: string, deck: DeckEntries): void;
+  /** Resumes this browser's online game (reconnection token), on load or after a lost connection. */
+  resumeOnline(): void;
+  rematch(): void;
   openReplay(record: GameRecord): void;
   replaySeek(index: number): void;
   replayViewer(player: string): void;
@@ -204,6 +239,61 @@ export function setUpdateObserver(observer: UpdateObserver | null): void {
 let recordWanted: "download" | "replay" | null = null;
 /** Replay autoplay: one step every 700 ms. */
 let replayTimer: ReturnType<typeof setInterval> | null = null;
+
+// Online play: the reconnection token and the nickname are kept (a reopened page resumes its game).
+const TOKEN_KEY = "finalcircle.online";
+const NAME_KEY = "finalcircle.name";
+
+function loadToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveToken(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // storage unavailable: no automatic reconnection
+  }
+}
+
+export function loadName(): string {
+  try {
+    return localStorage.getItem(NAME_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function saveName(name: string): void {
+  try {
+    localStorage.setItem(NAME_KEY, name);
+  } catch {
+    // setting not kept
+  }
+}
+
+const EMPTY_ONLINE: OnlineState = {
+  status: "connecting",
+  code: null,
+  seat: null,
+  players: [],
+  opponent: { connected: true, deadline: null },
+  clock: null,
+  error: null,
+  reconnecting: false,
+};
+
+/** Versions of this client, sent to the server (an outdated client is refused and reloads). */
+const VERSION = { protocol: PROTOCOL_VERSION, rules: RULES_VERSION };
+/** Delay between two reconnection attempts, and their number (about the server's return delay). */
+const RETRY_MS = 2000;
+const MAX_RETRIES = 30;
+let retries = 0;
 
 /** A game record downloaded as a JSON file (`finalcircle-game-2026-10-18-2214.json`). */
 function downloadRecord(record: GameRecord): void {
@@ -376,6 +466,126 @@ export const useGame = create<Store>((set, get) => {
 
   const sendSettings = (settings: ClientSettings) => get().session?.send({ type: "settings", settings });
 
+  /** The online game is lost for good (room closed, game deleted, server unreachable): a notice, back home. */
+  const onlineLost = (text: string, keepToken = false) => {
+    retries = 0;
+    if (!keepToken) saveToken(null);
+    get().session?.close();
+    queue.length = 0;
+    inFlight = false;
+    set({ online: null, session: null, screen: "lobby", view: null, casting: null, party: [], blocker: null, notice: text });
+  };
+
+  /** Opens a connection to the server (closing the previous session); a connection lost in a game is retried. */
+  const connectRemote = (keep?: OnlineState | null): RemoteSession => {
+    get().session?.close();
+    writer?.stop();
+    writer = null;
+    queue.length = 0;
+    inFlight = false;
+    const session: RemoteSession = new RemoteSession(
+      (m) => {
+        retries = 0;
+        receiveOnline(m);
+      },
+      () => {
+        const { online, session: current } = get();
+        if (current !== session || !online || !loadToken()) return;
+        set({ online: { ...online, reconnecting: true } });
+        if (retries++ < MAX_RETRIES) setTimeout(() => get().resumeOnline(), RETRY_MS);
+        else onlineLost(msg("The server no longer answers: the online game cannot be resumed."));
+      },
+    );
+    set({ session, replay: null, online: keep ? { ...keep, error: null } : { ...EMPTY_ONLINE } });
+    return session;
+  };
+
+  const receiveOnline = (m: ServerMessage) => {
+    const online = get().online;
+    if (!online) return;
+    switch (m.type) {
+      case "room": {
+        const r = m.room;
+        saveToken(r.token);
+        const starting = r.status === "playing" && online.status !== "playing";
+        set({
+          online: {
+            ...online,
+            status: r.status,
+            code: r.code,
+            seat: r.seat,
+            players: r.players,
+            match: r.match,
+            error: null,
+            reconnecting: false,
+          },
+          ...(starting
+            ? { screen: "game", view: null, log: [], casting: null, party: [], blocker: null, selection: [] }
+            : r.status === "waiting"
+              ? { screen: "online" }
+              : {}),
+        });
+        if (starting) {
+          preloadSounds();
+          newSessionSettings();
+        }
+        return;
+      }
+      case "update":
+        set({
+          online: { ...online, clock: m.clock ? { ...m.clock, deadline: Date.now() + m.clock.remainingMs } : null },
+          ...(get().screen !== "game" ? { screen: "game" } : {}),
+        });
+        queue.push({ type: "update", view: m.view, events: m.events, faces: m.faces });
+        void pump();
+        return;
+      case "opponent":
+        set({
+          online: {
+            ...online,
+            opponent: { connected: m.connected, deadline: m.remainingMs === null ? null : Date.now() + m.remainingMs },
+          },
+        });
+        return;
+      case "record": {
+        const wanted = recordWanted;
+        recordWanted = null;
+        if (wanted === "replay") get().openReplay(m.record);
+        else downloadRecord(m.record);
+        return;
+      }
+      case "error": {
+        if (m.code === "rules") {
+          inFlight = false;
+          playSound("error");
+          get().notify(m.message);
+          return;
+        }
+        // A client of another version than the server: the page reloads, the token is kept to resume the game.
+        if (m.code === "version") {
+          onlineLost(msg("{message} The page will reload.", { message: m.message }), true);
+          setTimeout(() => location.reload(), 3000);
+          return;
+        }
+        // This page's game no longer exists (over and deleted, server restarted without being able to resume it).
+        if (m.code === "token") return onlineLost(m.message);
+        // Resume refused: the game is already open in another tab or another browser.
+        if (m.code === "state" && !online.code) return onlineLost(m.message, true);
+        // Room closed by the server during a game.
+        if (m.code === "closed" && online.code && online.status !== "waiting") return onlineLost(m.message);
+        playSound("error");
+        set({ online: { ...online, error: m.message, status: online.code ? online.status : "connecting" } });
+        if (!online.code || m.code === "closed") {
+          // Creation or arrival refused, or room closed by the server: the connection is closed.
+          if (m.code === "closed") saveToken(null);
+          get().session?.close();
+          set({ session: null, online: { ...online, error: m.message, status: "connecting", code: null } });
+        }
+        return;
+      }
+    }
+  };
+
   /** A new game: "End turn" of the previous one no longer applies (its turn number would pass the new game's turns). */
   const newSessionSettings = () => {
     const settings = { ...get().settings, passUntilTurn: null };
@@ -415,6 +625,7 @@ export const useGame = create<Store>((set, get) => {
     hits: {},
     flash: null,
     abilityMenu: null,
+    online: null,
     replay: null,
     selection: [],
     busy: false,
@@ -471,7 +682,18 @@ export const useGame = create<Store>((set, get) => {
       preloadSounds();
       writer?.stop();
       writer = opts.sandbox ? null : new SaveWriter(() => ({ aiLevel: level, log: get().log }));
-      set({ session, screen: "game", view: null, faces: {}, log: [], casting: null, party: [], blocker: null, replay: null });
+      set({
+        session,
+        screen: "game",
+        view: null,
+        faces: {},
+        log: [],
+        casting: null,
+        party: [],
+        blocker: null,
+        replay: null,
+        online: null,
+      });
       session.send({
         type: "start",
         seed: opts.seed ?? Math.floor(Math.random() * 2 ** 31),
@@ -499,7 +721,18 @@ export const useGame = create<Store>((set, get) => {
         if (c) defs[code] = c;
       }
       preloadSounds();
-      set({ session, screen: "game", view: null, faces: {}, log: [], casting: null, party: [], blocker: null, replay: null });
+      set({
+        session,
+        screen: "game",
+        view: null,
+        faces: {},
+        log: [],
+        casting: null,
+        party: [],
+        blocker: null,
+        replay: null,
+        online: null,
+      });
       session.send({
         type: "start",
         seed: 1,
@@ -518,7 +751,44 @@ export const useGame = create<Store>((set, get) => {
       set({ settings });
       sendSettings(settings);
     },
+    openOnline() {
+      set({ screen: "online" });
+    },
+    createRoom(name, deck, opts) {
+      connectRemote().raw({
+        type: "create",
+        name,
+        deck,
+        format: opts.format,
+        ...(opts.ai ? { ai: { level: opts.ai } } : {}),
+        version: VERSION,
+      });
+      saveName(name);
+    },
+    joinRoom(code, name, deck) {
+      connectRemote().raw({ type: "join", code, name, deck, version: VERSION });
+      saveName(name);
+    },
+    resumeOnline() {
+      const token = loadToken();
+      if (!token) return;
+      connectRemote(get().online?.status === "connecting" ? undefined : get().online).raw({
+        type: "rejoin",
+        token,
+        version: VERSION,
+      });
+    },
+    rematch() {
+      const session = get().session;
+      if (session instanceof RemoteSession) session.raw({ type: "rematch" });
+    },
     resumeAtStartup() {
+      // An online game of this browser comes first (its token), then the saved game against the AI.
+      if (loadToken()) {
+        set({ screen: "game" });
+        get().resumeOnline();
+        return;
+      }
       const saved = loadSavedGame();
       if (!saved) return;
       const defs: Record<string, CardDef> = {};
@@ -533,7 +803,7 @@ export const useGame = create<Store>((set, get) => {
       writer?.stop();
       writer = new SaveWriter(() => ({ ...(saved.aiLevel ? { aiLevel: saved.aiLevel } : {}), log: get().log }));
       writer.start(saved.record);
-      set({ session, screen: "game", view: null, faces: {}, log: saved.log ?? [] });
+      set({ session, screen: "game", view: null, faces: {}, log: saved.log ?? [], online: null });
       session.send({
         type: "resume",
         record: saved.record,
@@ -546,6 +816,12 @@ export const useGame = create<Store>((set, get) => {
     leaveGame() {
       if (replayTimer) clearInterval(replayTimer);
       replayTimer = null;
+      // Online: leaving concedes the game in progress; the token is forgotten.
+      const session = get().session;
+      if (session instanceof RemoteSession) {
+        session.raw({ type: "leave" });
+        saveToken(null);
+      }
       // A recorded game left: nothing to resume (a tutorial or a replay keeps the saved game).
       if (writer) clearSavedGame();
       writer?.stop();
@@ -553,7 +829,7 @@ export const useGame = create<Store>((set, get) => {
       get().session?.close();
       queue.length = 0;
       inFlight = false;
-      set({ session: null, view: null, screen: "lobby", casting: null, party: [], blocker: null, replay: null });
+      set({ session: null, view: null, screen: "lobby", casting: null, party: [], blocker: null, replay: null, online: null });
     },
     decide(d) {
       if ((get().busy || inFlight) && d.type !== "concede") return;
@@ -694,8 +970,13 @@ export const useGame = create<Store>((set, get) => {
       get().session?.send({ type: "export" });
     },
     openReplay(record) {
-      // The replay of the game just finished: that game has nothing left to resume.
+      // The replay of the game just finished: that game has nothing left to resume (online: its room is left).
       if (writer && get().view?.over) clearSavedGame();
+      const current = get().session;
+      if (current instanceof RemoteSession) {
+        current.raw({ type: "leave" });
+        saveToken(null);
+      }
       writer?.stop();
       writer = null;
       get().session?.close();
@@ -715,6 +996,7 @@ export const useGame = create<Store>((set, get) => {
       set({
         screen: "game",
         session,
+        online: null,
         view,
         faces,
         log: [],

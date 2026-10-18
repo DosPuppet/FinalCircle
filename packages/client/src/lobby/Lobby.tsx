@@ -151,6 +151,9 @@ export function Lobby() {
           <DeckChoice decks={decks} label={t("The AI's deck")} name="theirs" value={theirs} onChange={setTheirs} />
         </div>
         <div className="lobby-buttons">
+          <button type="button" className="btn" onClick={() => useGame.getState().openOnline()} data-testid="open-online">
+            {t("Play online")}
+          </button>
           <button
             type="button"
             className="btn"

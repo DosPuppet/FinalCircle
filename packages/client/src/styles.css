@@ -1988,3 +1988,103 @@ input.deck-title {
 .tutorial-menu .btn.small.ghost {
   align-self: center;
 }
+
+/* Online play: the room, the timer and the rope, the opponent's connection. */
+.online-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.online-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: rgba(24, 34, 58, 0.6);
+}
+
+.online-card h3 {
+  margin: 0;
+  font-family: Cinzel, serif;
+}
+
+.online-card .seg {
+  flex-wrap: wrap;
+}
+
+.online-field {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.code-input {
+  font-size: 22px;
+  letter-spacing: 6px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.online-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.room-code {
+  font-family: ui-monospace, monospace;
+  font-size: 40px;
+  letter-spacing: 8px;
+  color: var(--gold);
+}
+
+.waiting-dots::after {
+  content: "…";
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.online-status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.clock {
+  position: relative;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--dim);
+  overflow: hidden;
+}
+
+.clock.mine {
+  color: var(--text);
+  border: 1px solid var(--accent);
+}
+
+.clock.rope {
+  color: #ffd6d6;
+  border-color: var(--danger);
+}
+
+.rope-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--danger);
+  transition: width 0.25s linear;
+}

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Board } from "./board/Board";
 import { DeckBuilder } from "./decks/DeckBuilder";
 import { Lobby } from "./lobby/Lobby";
+import { Online } from "./lobby/Online";
 import { useLocalize } from "./localize";
 import { Prompts } from "./prompts/Prompts";
 import { mainAction, useGame } from "./store";
@@ -67,6 +68,8 @@ export function App() {
         <DeckBuilder />
       ) : screen === "tutorial" ? (
         <TutorialMenu />
+      ) : screen === "online" ? (
+        <Online />
       ) : (
         <GameScreen />
       )}

@@ -222,6 +222,7 @@ const UI_QUEUES: Step[][] = [
   [
     { name: "deck-smoke", cmd: "npx tsx tools/deck-smoke.ts", show: /^ok: game started.*$/, needs: "tools/deck-smoke.ts" },
     { name: "replay-smoke", cmd: "npx tsx tools/replay-smoke.ts", show: /^ok: replay .*$/, needs: "tools/replay-smoke.ts" },
+    { name: "online-smoke", cmd: "npx tsx tools/online-smoke.ts", show: /^ok: online duel.*$/, needs: "tools/online-smoke.ts" },
   ],
 ];
 const LANG_SMOKE: Step = {

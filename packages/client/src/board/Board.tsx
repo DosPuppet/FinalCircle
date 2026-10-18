@@ -146,6 +146,7 @@ function ZoneDialog({ title, cards, onClose }: { title: string; cards: ObjectVie
 function Zones({ view, player, mine }: { view: GameView; player: PlayerId; mine: boolean }) {
   const faces = useGame((s) => s.faces);
   const t = useT();
+  const loc = useLocalize();
   const [open, setOpen] = useState<"break" | "lb" | "removed" | null>(null);
   const pl = view.players[player];
   if (!pl) return null;
@@ -154,7 +155,7 @@ function Zones({ view, player, mine }: { view: GameView; player: PlayerId; mine:
   return (
     <div className={`zones ${mine ? "me" : "opp"}`}>
       <div className="player-name" data-tuto={mine ? "my-name" : "opp-name"}>
-        {pl.name}
+        {loc(pl.name)}
         {view.turn.active === player ? <span className="turn-dot" title={t("Turn player")} /> : null}
       </div>
       <div className="damage-zone" data-tuto={mine ? "my-damage" : "opp-damage"} title={t("Damage Zone")}>
@@ -317,6 +318,49 @@ function TouchPreview() {
     // biome-ignore lint/a11y/useKeyWithClickEvents: Escape closes it (App.tsx)
     <div className="touch-preview" onClick={() => setPeek(null)}>
       <Preview id={peek} />
+    </div>
+  );
+}
+
+/**
+ * Online: the time left for the current decision (the rope shows during its last seconds) and the opponent's
+ * connection. The server plays a default decision when the time runs out, and a third time counts as a loss.
+ */
+function OnlineStatus({ view }: { view: GameView }) {
+  const online = useGame((s) => s.online);
+  const t = useT();
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!online) return;
+    const timer = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(timer);
+  }, [online]);
+  if (!online) return null;
+  const clock = online.clock;
+  const left = clock ? Math.max(0, clock.deadline - now) : 0;
+  const mine = clock?.player === view.viewer;
+  const rope = !!clock && left <= clock.ropeMs;
+  const away = !online.opponent.connected;
+  return (
+    <div className="online-status" data-testid="online-status">
+      {online.reconnecting ? <span className="warn">{t("Connection lost: reconnecting…")}</span> : null}
+      {away ? (
+        <span className="warn">
+          {online.opponent.deadline
+            ? t("Your opponent is disconnected: {s} s to come back.", {
+                s: Math.ceil(Math.max(0, online.opponent.deadline - now) / 1000),
+              })
+            : t("Your opponent is disconnected.")}
+        </span>
+      ) : null}
+      {clock && !view.over ? (
+        <span className={`clock${mine ? " mine" : ""}${rope ? " rope" : ""}`} title={t("Time left for this decision")}>
+          {mine
+            ? t("Your time: {s} s", { s: Math.ceil(left / 1000) })
+            : t("Opponent's time: {s} s", { s: Math.ceil(left / 1000) })}
+          {rope ? <span className="rope-bar" style={{ width: `${(left / clock.ropeMs) * 100}%` }} /> : null}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -502,6 +546,7 @@ export function Board() {
         <FieldSide view={view} player={opp} mine={false} />
         <div className="center-strip">
           <PhaseTrack view={view} />
+          <OnlineStatus view={view} />
           <AttackInfo view={view} />
           <StackView view={view} />
           {replaying ? <ReplayBar /> : <MainButton view={view} />}

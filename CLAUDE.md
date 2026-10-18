@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality), **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested), **A7** (AI levels, fuzz, golden games), **A8** (game screen: board, payment, prompts, attacks and blocks, EX Burst, animations, sounds, phones; interface smokes), **A9** (deck builder, sharing, home screen, replay viewer), **A10** (tutorial: ten lessons) and **A11a** (online server) done. Next: A11b (online play in the client).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality), **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested), **A7** (AI levels, fuzz, golden games), **A8** (game screen: board, payment, prompts, attacks and blocks, EX Burst, animations, sounds, phones; interface smokes), **A9** (deck builder, sharing, home screen, replay viewer), **A10** (tutorial: ten lessons) and **A11** (online duel: server and client) done. Next: A12 (deployment).
 
 ## Documents
 

@@ -14,7 +14,11 @@
     "format": "biome format --write .",
     "verify": "tsx tools/verify.ts",
     "import-cards": "tsx tools/import-cards.ts",
-    "coverage": "tsx tools/card-coverage.ts"
+    "coverage": "tsx tools/card-coverage.ts",
+    "fuzz": "tsx tools/fuzz.ts",
+    "golden": "tsx tools/golden.ts",
+    "arena": "tsx tools/ai-arena.ts",
+    "bench": "tsx tools/bench.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",

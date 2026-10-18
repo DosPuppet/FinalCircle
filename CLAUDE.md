@@ -14,7 +14,7 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality) , **A4** (engine core), **A5** (abilities, rules 2) and **A6** (the 42 starter cards scripted and tested) done. Next: A7 (AI, fuzz, golden games).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality) , **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested) and **A7** (AI levels, fuzz, golden games) done. Next: A8 (game screen).
 
 ## Documents
 
@@ -22,6 +22,7 @@ This file tracks the project between sessions: current state, working rules, pit
 - `docs/rules.md`: digest of the Comprehensive Rules v3.3 by section, the interpretations taken where the rules are unclear (I1…), the English–French glossary. **Read before changing the engine.** Exact wording: `npx tsx tools/rules-text.ts [--fetch]` writes the PDF and its text to `data/cache/rules/` (outside Git).
 - `docs/engine.md`: map of the engine files and the rules of its code. **Read before changing the engine.**
 - `docs/approximations.md`: known approximations. **Every new approximation is added there**; every approximation lifted is removed from it.
+- `docs/ai.md`: AI levels, evaluation, measures, the fuzz, golden, arena and bench tools.
 - `docs/history.md`: milestones and chronology; `docs/backlog.md`: open items.
 
 ## Conventions
@@ -55,7 +56,8 @@ This file tracks the project between sessions: current state, working rules, pit
 - **Per lot:** `npm run verify -- --group <group>` (`tsc`, Biome, vitest; then, as their tools are written: coverage and bundle budget, fuzz from lot A7, interface tests from lot A8 when the client, `view.ts` or the protocol changed, Vite running).
 - **At the end of a series or before a merge:** `npm run verify -- --full`. **CI** (`.github/workflows/ci.yml`): `verify --ci` on every push to `dev` or `master`; `verify --full --no-ui --no-bench` every night.
 - **Result:** one line per step with its duration; detail only on failure; logs in `test-results/verify/`.
-- **[rules] lot** (from A4): advance `RULES_VERSION`; golden games that diverge are regenerated and the commit says which.
+- **[rules] lot**: advance `RULES_VERSION` (`engine/src/record.ts`, history line); `npm run golden -- --update` regenerates only the golden games that diverge, and the commit says which; `ai/test/golden.test.ts` fails on a divergence at equal version.
+- **Fuzz by hand:** `npm run fuzz -- --games 300 --pool starter25 --offers 4 --jobs 10` (identical results for the same seed, whatever `--jobs`); judge an AI change by tournament (`npm run arena`, 600 games).
 
 ## Known pitfalls (carried over from Planecircle)
 

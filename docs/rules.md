@@ -252,6 +252,8 @@ The engine follows the **Final Fantasy TCG Comprehensive Rules, version 3.3**, e
 | I21 | Party with Multi-Element Forwards | A party is valid when one element is shared by every member. | 10.1.2.1, 15.1.1.9.2 |
 | I22 | Element requirement for ability costs | An ability's cost requires exactly the element CP its symbols show (《火》 = 1 Fire CP, 《1》 = 1 CP of any element); the "same element as the card" rule applies only to a card's base cost. | 11.2.2, 11.6.2.1 |
 | I23 | EX Burst that chooses a target | It can be used only if a legal target exists when it is applied; the target is chosen then. | 11.10.2, 11.8.9 |
+| I24 | Damage a party deals to the opponent | Each member is considered to have dealt that damage ("When X deals damage to your opponent" triggers for each); it is still 1 point. | 15.1.1.9.1, 15.1.1.9.10 |
+| I25 | The blocker leaves before the Damage Resolution Step | The attack stays blocked: no damage to the player, and no battle damage. | 10.1.3.2.1, 10.1.3.3 |
 
 ## Glossary (English → French)
 

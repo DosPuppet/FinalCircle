@@ -27,6 +27,8 @@ export interface GameObject {
   dull: boolean;
   /** Damage received this turn (removed in the End Phase, CR 9.5.1.3.1). */
   damage: number;
+  /** Source of the last damage it received: it broke it, if a rule process breaks it right after (CR 12.4.5). */
+  damagedBy?: ObjectId;
   /** CR 15.2.4: does not activate during its controller's next Active Phase. */
   frozen?: boolean;
   /** Face down (LB deck cards, CR 7.14.2; cards removed face down, CR 7.13.3). */
@@ -109,6 +111,11 @@ export interface PendingTrigger {
   /** Values fixed when a reflexive ability was created (the resolution's stored cards). */
   vars?: Record<string, ChoiceValue[]>;
   event: TriggerEvent;
+  /** Its controller placed it in this order among theirs (CR 11.8.7). */
+  ordered?: boolean;
+  /** Modes and targets chosen while it is put on the stack (CR 11.8.9–10). */
+  modes?: number[];
+  targets?: Record<string, ObjectId[]>;
 }
 
 export interface StackItem {
@@ -155,12 +162,26 @@ export interface AttackState {
   partyElement?: Element;
   blocker: ObjectId | null;
   blockDeclared: boolean;
+  /** A blocker was declared: the attack stays blocked even if the blocker leaves (I25). */
+  blocked?: boolean;
+  /** Damage Resolution Step (CR 10.1.4, 15.2.3): the First Strike round, then the others. */
+  damage?: {
+    stage: "first" | "normal" | "done";
+    /** Forwards that already dealt their battle damage. */
+    dealt: ObjectId[];
+    /** The blocker's damage split among the party (CR 10.1.4.2.1), once chosen. */
+    split?: Record<ObjectId, number>;
+  };
 }
 
-/** EX Bursts waiting after a damage resolution (CR 6.5.2.1): in the order the cards arrived. */
-export interface ExBurstQueue {
+/** An EX Burst waiting after a damage resolution (CR 6.5.2.1): queued in the order the cards arrived. */
+export interface ExBurstEntry {
   player: PlayerId;
-  cards: ObjectId[];
+  card: ObjectId;
+  /** The player's answer: use it or not (CR 11.10.2). */
+  use?: boolean;
+  modes?: number[];
+  targets?: Record<string, ObjectId[]>;
 }
 
 /** Turn log: facts of this turn that abilities read ("put in your Break Zone from the field during this turn"). */
@@ -201,7 +222,7 @@ export interface GameState {
   attack: AttackState | null;
   effects: ContinuousEffect[];
   triggers: PendingTrigger[];
-  exBursts: ExBurstQueue | null;
+  exBursts: ExBurstEntry[];
   pending: PendingDecision | null;
   resolving: Resolution | null;
   setup: { chooser: PlayerId; mulliganQueue: PlayerId[] };

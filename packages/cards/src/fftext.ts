@@ -182,15 +182,21 @@ export function parseAbilities(text: string, type: CardType): ParsedAbility[] {
     if (KEYWORD_LINE.test(p))
       return { kind: "keyword", text: p, keywords: p.split(/\s*(?:,|and)\s*/).map((k) => KEYWORDS[k] as Keyword) };
     const out: ParsedAbility = { kind: "field", text: p };
-    const ex = /^\[\[ex\]\]EX BURST\[\[\/\]\]\s*/.exec(p);
-    if (ex) {
-      out.exBurst = true;
-      p = p.slice(ex[0].length);
-    }
-    const dmg = /^\[\[i\]\]Damage (\d+) ?--\s*\[\[\/\]\]\s*/.exec(p);
-    if (dmg) {
-      out.damage = Number(dmg[1]);
-      p = p.slice(dmg[0].length);
+    // The EX BURST and "Damage N --" prefixes, in either order.
+    for (let more = true; more; ) {
+      more = false;
+      const ex = /^\[\[ex\]\]EX BURST\[\[\/\]\]\s*/.exec(p);
+      if (ex) {
+        out.exBurst = true;
+        p = p.slice(ex[0].length);
+        more = true;
+      }
+      const dmg = /^\[\[i\]\]Damage (\d+) ?--\s*\[\[\/\]\]\s*/.exec(p);
+      if (dmg) {
+        out.damage = Number(dmg[1]);
+        p = p.slice(dmg[0].length);
+        more = true;
+      }
     }
     out.text = p;
     const special = /^\[\[s\]\](.+?)\[\[\/\]\]\s*(《S》.*?):\s/.exec(p);

@@ -3,7 +3,7 @@
  * number. What the text says and the engine can read without a script (keywords, Limit Break) is deduced by `fftext.ts`.
  */
 import type { CardDef } from "@finalcircle/engine";
-import { lbCost, onlyKeywords, printedKeywords } from "./fftext";
+import { lbCost, onlyKeywords, parseAbilities, printedKeywords } from "./fftext";
 import { GROUPS } from "./groups";
 import type { RawCard } from "./raw";
 import type { CardScript } from "./script";
@@ -27,6 +27,7 @@ export { CARD_GROUPS, SET_INFO } from "./setRegistry";
 export function toCardDef(raw: RawCard, script: CardScript | undefined): CardDef {
   const keywords = [...new Set([...printedKeywords(raw.text, raw.type), ...(script?.keywords ?? [])])];
   const lb = lbCost(raw.text, raw.type);
+  const exBurstDamage = parseAbilities(raw.text, raw.type).find((a) => a.exBurst && a.damage)?.damage;
   return {
     id: raw.id,
     codes: raw.codes,
@@ -39,6 +40,7 @@ export function toCardDef(raw: RawCard, script: CardScript | undefined): CardDef
     categories: raw.categories,
     generic: raw.generic,
     exBurst: raw.exBurst,
+    ...(exBurstDamage ? { exBurstDamage } : {}),
     rarity: raw.rarity,
     set: raw.set,
     ...(lb ? { lb } : {}),

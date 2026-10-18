@@ -187,6 +187,8 @@ export interface CardDef {
   /** Generic icon (CR 5.2.2.1): any number of this name on a field. */
   generic: boolean;
   exBurst: boolean;
+  /** "Damage N --" before EX BURST (CR 15.2.6.3): the EX Burst works only with N or more cards in the Damage Zone. */
+  exBurstDamage?: number;
   rarity: string;
   /** Set number of the identity printing (1 for Opus I…): L3 legality. */
   set: number;

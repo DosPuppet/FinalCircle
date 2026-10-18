@@ -36,7 +36,7 @@ function emptyState(seed: number): GameState {
     attack: null,
     effects: [],
     triggers: [],
-    exBursts: null,
+    exBursts: [],
     pending: null,
     resolving: null,
     setup: { chooser: "p1", mulliganQueue: [] },

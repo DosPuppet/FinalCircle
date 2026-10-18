@@ -69,6 +69,7 @@ export type ChoicePurpose =
   | { kind: "triggerTargets"; trigger: string; key: string }
   | { kind: "triggerModes"; trigger: string }
   | { kind: "exBurst"; card: ObjectId }
+  | { kind: "exBurstModes"; card: ObjectId }
   | { kind: "exBurstTargets"; card: ObjectId; key: string }
   | { kind: "partyDamage" }
   | { kind: "excessBackups"; player: PlayerId }

@@ -14,12 +14,13 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## State (2026-10-18)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure) and **A3** (card data and deck legality: 42 starter cards, 0 scripted yet) done. Next: A4 (engine core).
+- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality: 42 starter cards, 0 scripted yet) and **A4** (engine core, rules 1) done. Next: A5 (abilities: effect handlers, DSL, replacements).
 
 ## Documents
 
 - `docs/plans/PLAN-A.md`: Milestone 1, lots A0 to A13; tracking at the end.
 - `docs/rules.md`: digest of the Comprehensive Rules v3.3 by section, the interpretations taken where the rules are unclear (I1…), the English–French glossary. **Read before changing the engine.** Exact wording: `npx tsx tools/rules-text.ts [--fetch]` writes the PDF and its text to `data/cache/rules/` (outside Git).
+- `docs/engine.md`: map of the engine files and the rules of its code. **Read before changing the engine.**
 - `docs/approximations.md`: known approximations. **Every new approximation is added there**; every approximation lifted is removed from it.
 - `docs/history.md`: milestones and chronology; `docs/backlog.md`: open items.
 

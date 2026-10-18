@@ -96,12 +96,48 @@ function FieldSide({ view, player, mine }: { view: GameView; player: PlayerId; m
   );
 }
 
+/** Cards of a zone that can be used now: cast from the LB deck (CR 15.2.8), abilities usable from the Break Zone. */
+function usable(view: GameView, ids: string[]): Set<string> {
+  return new Set(
+    priorityActions(view)
+      .map((a) => (a.type === "cast" ? a.card : a.type === "activate" ? a.source : null))
+      .filter((id): id is string => !!id && ids.includes(id)),
+  );
+}
+
 function ZoneDialog({ title, cards, onClose }: { title: string; cards: ObjectView[]; onClose: () => void }) {
   const faces = useGame((s) => s.faces);
+  const view = useGame((s) => s.view);
+  const clickCard = useGame((s) => s.clickCard);
+  const ready = view
+    ? usable(
+        view,
+        cards.map((o) => o.id),
+      )
+    : new Set<string>();
   return (
-    <Dialog title={title} onClose={onClose} className="zone-dialog">
+    <Dialog title={title} onClose={onClose} className="zone-dialog" testId="zone-dialog">
       <div className="zone-cards">
-        {cards.length ? cards.map((o) => <Card key={o.id} obj={o} face={faces[o.defId]} />) : <p className="dim">—</p>}
+        {cards.length ? (
+          cards.map((o) => (
+            <Card
+              key={o.id}
+              obj={o}
+              face={faces[o.defId]}
+              glow={ready.has(o.id) ? "playable" : null}
+              onClick={
+                ready.has(o.id)
+                  ? () => {
+                      onClose();
+                      clickCard(o.id);
+                    }
+                  : undefined
+              }
+            />
+          ))
+        ) : (
+          <p className="dim">—</p>
+        )}
       </div>
     </Dialog>
   );
@@ -140,7 +176,15 @@ function Zones({ view, player, mine }: { view: GameView; player: PlayerId; mine:
         </button>
         <button
           type="button"
-          className="pile break"
+          className={`pile break${
+            mine &&
+            usable(
+              view,
+              pl.breakZone.map((o) => o.id),
+            ).size
+              ? " ready"
+              : ""
+          }`}
           data-tuto={mine ? "my-break" : "opp-break"}
           title={t("Break Zone")}
           onClick={() => setOpen("break")}
@@ -150,7 +194,15 @@ function Zones({ view, player, mine }: { view: GameView; player: PlayerId; mine:
         </button>
         <button
           type="button"
-          className="pile lb"
+          className={`pile lb${
+            mine &&
+            usable(
+              view,
+              pl.lb.map((o) => o.id),
+            ).size
+              ? " ready"
+              : ""
+          }`}
           data-tuto={mine ? "my-lb" : "opp-lb"}
           title={t("LB deck")}
           onClick={() => setOpen("lb")}
@@ -354,8 +406,14 @@ function MainButton({ view }: { view: GameView }) {
         </button>
       ) : null}
       {waiting ? <span className="waiting">{t("The opponent is playing…")}</span> : null}
-      {view.turn.active === view.viewer && !view.over && !casting && !replaying ? (
-        <button type="button" className="btn ghost" onClick={() => endTurn()} title={t("Pass until the end of the turn")}>
+      {view.turn.active === view.viewer && !view.over && !casting && !replaying && action?.decision !== "endTurn" ? (
+        <button
+          type="button"
+          className="btn ghost"
+          onClick={() => endTurn()}
+          title={t("Pass until the end of the turn")}
+          data-tuto="endTurn"
+        >
           {t("End turn")}
         </button>
       ) : null}

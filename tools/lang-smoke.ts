@@ -1,6 +1,6 @@
 /**
- * Display in both languages (from Planecircle): opens the home screen, then plays a game against the AI, in French and
- * in English, and checks every text shown (text, `title`, `aria-label`):
+ * Display in both languages (from Planecircle): opens the home screen, the tutorial menu and the deck builder, then
+ * plays a game against the AI, in French and in English, and checks every text shown (text, `title`, `aria-label`):
  * - no raw marker of an engine text (`⟨…⟩`, `⟦…⟧`): a text not rendered through the decoder;
  * - in English, no French line (detector of `cards/test/frenchSource.ts`);
  * - in French, no line that is an English message id with another French translation: a text not translated.
@@ -73,6 +73,16 @@ for (const lang of ["fr", "en"] as const) {
   await openHome(page, lang);
   await check(page, lang, "home");
   await page.screenshot({ path: join(OUT, `${lang}-home.png`) });
+  // The tutorial menu and the deck builder, then back home.
+  await page.locator("[data-testid=open-tutorial]").click();
+  await page.locator("[data-testid^=lesson-]").first().waitFor({ timeout: 5000 });
+  await check(page, lang, "tutorial menu");
+  await page.screenshot({ path: join(OUT, `${lang}-tutorial.png`) });
+  await openHome(page, lang);
+  await page.locator("[data-testid=open-decks]").click();
+  await page.locator(".deck-item").first().click();
+  await check(page, lang, "deck builder");
+  await openHome(page, lang);
   await page.locator("[data-testid=play]").click();
   await page.locator(".game").waitFor({ timeout: 15_000 });
   const end = await playGame(page, MAX, {

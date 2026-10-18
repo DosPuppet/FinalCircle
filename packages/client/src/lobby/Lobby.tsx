@@ -151,6 +151,14 @@ export function Lobby() {
           <DeckChoice decks={decks} label={t("The AI's deck")} name="theirs" value={theirs} onChange={setTheirs} />
         </div>
         <div className="lobby-buttons">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => useGame.setState({ screen: "tutorial" })}
+            data-testid="open-tutorial"
+          >
+            {t("Learn to play")}
+          </button>
           <button type="button" className="btn" onClick={() => openDecks(null)} data-testid="open-decks">
             {t("Deck builder")}
           </button>

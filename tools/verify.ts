@@ -215,7 +215,7 @@ const UI_QUEUES: Step[][] = [
     {
       name: "tutorial-smoke",
       cmd: "npx tsx tools/tutorial-smoke.ts",
-      show: /^ok: tutorial followed end to end$/,
+      show: /^ok: tutorial followed end to end.*$/,
       needs: "tools/tutorial-smoke.ts",
     },
   ],

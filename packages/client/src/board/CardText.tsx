@@ -28,8 +28,8 @@ function symbol(sym: string, key: string, size: number): ReactNode {
   return <GenericCp key={key} n={sym} size={size} />;
 }
 
-/** Inline content: the symbols of a run of text. */
-function inline(text: string, keyBase: string, size: number): ReactNode[] {
+/** Inline content: the symbols of a run of text (also used by the tutorial's guide). */
+export function inline(text: string, keyBase: string, size: number): ReactNode[] {
   return text.split(/(《[^》]+》)/).map((part, i) => {
     const m = /^《([^》]+)》$/.exec(part);
     return m ? symbol(m[1] as string, `${keyBase}-${i}`, size) : <Fragment key={`${keyBase}-${i}`}>{part}</Fragment>;

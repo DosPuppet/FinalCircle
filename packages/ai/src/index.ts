@@ -9,4 +9,5 @@ export * from "./options";
 export * from "./policy";
 export * from "./profile";
 export * from "./random";
+export * from "./scripted";
 export * from "./selfplay";

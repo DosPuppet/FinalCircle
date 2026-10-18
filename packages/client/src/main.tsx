@@ -6,10 +6,30 @@ import { App } from "./App";
 import { playSound, unlockAudio, useAudio } from "./audio/sfx";
 import { decodeDeck, sharedDeckData } from "./decks/share";
 import { flushSave, useGame } from "./store";
+import { lessonById } from "./tutorial/lessons";
+import { useTutorial } from "./tutorial/store";
 import "./styles.css";
 
-// Dev mode: access to the store for the Playwright scripts (sandbox, see protocol.ts).
-if (import.meta.env.DEV) (window as unknown as { __fc: typeof useGame }).__fc = useGame;
+// Dev mode: access to the stores for the Playwright scripts (sandbox, see protocol.ts; tutorial: the current step).
+if (import.meta.env.DEV) {
+  const w = window as unknown as { __fc: typeof useGame; __tutoStep: () => unknown };
+  w.__fc = useGame;
+  w.__tutoStep = () => {
+    const tuto = useTutorial.getState();
+    const step = lessonById(tuto.lessonId)?.steps[tuto.step];
+    return step
+      ? {
+          lesson: tuto.lessonId,
+          index: tuto.step,
+          finished: tuto.finished,
+          next: !!step.next,
+          free: !!step.free,
+          allow: step.allow ?? [],
+          target: step.target ?? null,
+        }
+      : { lesson: tuto.lessonId, finished: tuto.finished };
+  };
+}
 
 const root = document.getElementById("root");
 if (root) {

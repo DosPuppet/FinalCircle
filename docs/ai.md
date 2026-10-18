@@ -12,6 +12,10 @@ Planecircle's AI design (`packages/ai`), with an FFTCG evaluation, policy and co
 
 `fair: true` (interface and server): the AI decides on the state as its seat may know it (`forAgent`): the opponent's hand, main deck and face-down LB cards are redrawn from the cards seen of them. With nothing seen yet (the first turns), their cards are kept: the prebuilt decks are public lists (an approximation of hidden information; `docs/approximations.md`).
 
+## Scripted opponent (`scripted.ts`)
+
+The tutorial's opponent: it plays the actions of its script (cards by card number: a cast, an ability, in a phase or in response, an attack with one Forward or a party, a block), with the payment the engine suggests and the first legal targets unless the script names them; outside the script it passes, does not attack or block, and answers with the engine's suggestion.
+
 ## Evaluation (`evaluate.ts`)
 
 Damage taken (growing weight up to the seventh, which loses), Forwards (power, Brave, First Strike, "cannot be broken", damage already on them), Backups (CP), Monsters, cards in hand, face-down LB cards, Crystals, a short main deck.

@@ -5,6 +5,7 @@
 import { aiAgent } from "@finalcircle/ai";
 import type { DeckEntries } from "@finalcircle/cards";
 import {
+  type Agent,
   type CardDef,
   createObject,
   createRecordedGame,
@@ -19,6 +20,7 @@ import {
   visibleFaces,
 } from "@finalcircle/engine";
 import type { FromWorker, Sandbox, ToWorker } from "../protocol";
+import { buildScenario } from "../scenario";
 
 const HUMAN = "p1";
 const AI = "p2";
@@ -83,13 +85,15 @@ const DIVERGED_UPDATED = msg("the game no longer replays identically (the engine
 function hostFor(
   state: GameState,
   seed: number,
-  opts: { fast?: boolean; aiLevel?: string; record?: GameRecord },
+  opts: { fast?: boolean; aiLevel?: string; record?: GameRecord; agent?: Agent },
   events: GameEvent[] = [],
 ) {
   return new GameHost(
     state,
     {
-      agents: { [AI]: aiAgent((opts.aiLevel as never) ?? "medium", { seed: seed + 1, budget: AI_BUDGET, fair: true }) },
+      agents: {
+        [AI]: opts.agent ?? aiAgent((opts.aiLevel as never) ?? "medium", { seed: seed + 1, budget: AI_BUDGET, fair: true }),
+      },
       aiDelay: opts.fast && import.meta.env.DEV ? 0 : 900,
       sleep,
       gate,
@@ -118,6 +122,14 @@ async function handle(m: ToWorker): Promise<void> {
     case "start": {
       defs = m.defs;
       paused = false;
+      // Tutorial: a staged game with its scripted opponent, not recorded (nothing to resume).
+      if (m.scenario) {
+        const { state, events, opponent } = buildScenario(m.scenario, card, m.seed, m.playerName, m.aiName);
+        sent = 0;
+        host = hostFor(state, m.seed, { ...(m.fast ? { fast: true } : {}), agent: opponent }, events);
+        await host.run();
+        return;
+      }
       const me = deckOf(m.playerDeck);
       const ai = deckOf(m.aiDeck);
       const { state, events, record } = createRecordedGame({

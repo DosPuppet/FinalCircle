@@ -5,6 +5,8 @@ import { Lobby } from "./lobby/Lobby";
 import { useLocalize } from "./localize";
 import { Prompts } from "./prompts/Prompts";
 import { mainAction, useGame } from "./store";
+import { Coach } from "./tutorial/Coach";
+import { TutorialMenu } from "./tutorial/TutorialMenu";
 
 /** A short message; its text can come from the engine or the interface (`msg`), translated here. */
 function Toast() {
@@ -50,6 +52,7 @@ function GameScreen() {
     <>
       <Board />
       <Prompts />
+      <Coach />
     </>
   );
 }
@@ -58,7 +61,15 @@ export function App() {
   const screen = useGame((s) => s.screen);
   return (
     <>
-      {screen === "lobby" ? <Lobby /> : screen === "decks" ? <DeckBuilder /> : <GameScreen />}
+      {screen === "lobby" ? (
+        <Lobby />
+      ) : screen === "decks" ? (
+        <DeckBuilder />
+      ) : screen === "tutorial" ? (
+        <TutorialMenu />
+      ) : (
+        <GameScreen />
+      )}
       <Toast />
     </>
   );

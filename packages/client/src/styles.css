@@ -1798,3 +1798,193 @@ input.deck-title {
   display: inline-flex;
   align-items: center;
 }
+
+/* A Limit Break card can be cast: the LB deck glows. */
+.pile.ready .card {
+  box-shadow:
+    0 0 0 2px var(--ok),
+    0 0 10px var(--ok);
+}
+
+/* Tutorial (from Planecircle): the guide (bubble and ring) and the lesson menu. */
+.coach-ring {
+  position: fixed;
+  z-index: 140;
+  pointer-events: none;
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 0 18px rgba(240, 184, 74, 0.7);
+  animation: coach-pulse 1.4s ease-in-out infinite;
+  transition:
+    left 0.2s,
+    top 0.2s,
+    width 0.2s,
+    height 0.2s;
+}
+/* Explanation: the rest of the screen darkens. */
+.coach-ring.dim {
+  box-shadow:
+    0 0 18px rgba(240, 184, 74, 0.7),
+    0 0 0 200vmax rgba(3, 5, 8, 0.45);
+  animation: none;
+}
+@keyframes coach-pulse {
+  50% {
+    box-shadow: 0 0 30px rgba(240, 184, 74, 1);
+  }
+}
+.coach {
+  position: fixed;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(240, 184, 74, 0.55);
+  background: #161d27;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65);
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
+  transition:
+    left 0.2s,
+    top 0.2s;
+}
+.coach.done {
+  border-color: var(--ok);
+}
+.coach-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+}
+.coach-count {
+  color: var(--dim);
+}
+.coach-text strong {
+  color: #ffe2a3;
+}
+.coach-text svg,
+.coach-tip svg {
+  vertical-align: -3px;
+}
+.coach-tip {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(77, 182, 255, 0.1);
+  border-left: 3px solid var(--accent);
+  font-size: 0.8125rem;
+}
+.coach-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.coach-spacer {
+  flex: 1;
+}
+.coach-next {
+  min-width: 90px;
+}
+.coach-reopen {
+  position: fixed;
+  z-index: 150;
+  left: 12px;
+  top: 12px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(240, 184, 74, 0.55);
+  background: #161d27;
+  color: var(--gold);
+  cursor: pointer;
+}
+@media (max-height: 560px) {
+  .coach {
+    font-size: 0.8125rem;
+    padding: 9px 11px;
+    gap: 6px;
+  }
+}
+
+.tutorial-menu .lobby-head h1 {
+  font-size: 2.75rem;
+  letter-spacing: 3px;
+}
+.lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.lesson-tile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: #151c26;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+.lesson-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(240, 184, 74, 0.5);
+}
+.lesson-tile.current {
+  border-color: var(--gold);
+}
+.lesson-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+.lesson-tile.done .lesson-num {
+  background: var(--ok);
+  color: #0c1a12;
+}
+.lesson-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lesson-title {
+  font-weight: 700;
+}
+.lesson-badge {
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(240, 184, 74, 0.18);
+  color: var(--gold);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+.lesson-summary {
+  color: var(--dim);
+  font-size: 0.8125rem;
+}
+.tutorial-menu .btn.small.ghost {
+  align-self: center;
+}

@@ -486,11 +486,17 @@ function AbilityMenu({ view }: { view: GameView }) {
       <div className="modes">
         {options.map((o, i) =>
           o.type === "cast" ? (
-            <button type="button" key={`c${i}`} className="btn mode" onClick={() => begin(o)}>
+            <button type="button" key={`c${i}`} className="btn mode" onClick={() => begin(o)} data-testid="ability-cast">
               {t("Cast")}
             </button>
           ) : o.type === "activate" ? (
-            <button type="button" key={`a${o.ability}`} className="btn mode" onClick={() => begin(o)}>
+            <button
+              type="button"
+              key={`a${o.ability}`}
+              className="btn mode"
+              onClick={() => begin(o)}
+              data-testid={`ability-${o.ability}`}
+            >
               {loc(o.label)}
             </button>
           ) : null,

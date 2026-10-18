@@ -30,12 +30,14 @@ import { findDeck } from "./decks/store";
 import { fastMode } from "./fast";
 import { loadFormat, saveFormat } from "./format";
 import { describeEvents, type LogLine } from "./i18n";
-import type { FromWorker } from "./protocol";
+import type { FromWorker, ScenarioSpec } from "./protocol";
 import { clearSavedGame, loadSavedGame, SaveWriter } from "./savedGame";
+import { scenarioCards } from "./scenario";
 import { LocalSession, ReplaySession, type Session } from "./session";
 import { type Lang, setTextLang, t } from "./translate";
+import type { PlayerIntent } from "./tutorial/runtime";
 
-export type Screen = "lobby" | "game" | "decks";
+export type Screen = "lobby" | "game" | "decks" | "tutorial";
 
 /** An option being cast or used: its modes, targets, payment, LB flips and same-name discard. */
 export interface Casting {
@@ -148,6 +150,10 @@ interface Store {
   setSettings(p: Partial<ClientSettings>): void;
   notify(text: string): void;
   startGame(myDeck: string, aiDeck: string, opts?: { seed?: number; sandbox?: import("./protocol").Sandbox }): void;
+  /** Tutorial: a staged game against a scripted opponent, not saved. */
+  startScenario(spec: ScenarioSpec): void;
+  /** Tutorial: autopilot settings of a step, not kept. */
+  applySettings(partial: Partial<AutopilotSettings>): void;
   resumeAtStartup(): void;
   leaveGame(): void;
   decide(d: Decision): void;
@@ -180,6 +186,20 @@ let writer: SaveWriter | null = null;
 const queue: FromWorker[] = [];
 /** A decision was sent and its answer (an update or an error) has not come back: a second click is ignored. */
 let inFlight = false;
+/** Tutorial: whether a decision is the one the guided step expects (null) or the reminder to show. */
+type DecisionGuard = (intent: PlayerIntent, view: GameView, partial: boolean) => string | null;
+let decisionGuard: DecisionGuard | null = null;
+export function setDecisionGuard(guard: DecisionGuard | null): void {
+  decisionGuard = guard;
+}
+
+/** Tutorial: told of every update shown (the steps advance on them). */
+type UpdateObserver = (view: GameView, events: GameEvent[]) => void;
+let updateObserver: UpdateObserver | null = null;
+export function setUpdateObserver(observer: UpdateObserver | null): void {
+  updateObserver = observer;
+}
+
 /** What to do with the record the worker sends back (`exportGame`). */
 let recordWanted: "download" | "replay" | null = null;
 /** Replay autoplay: one step every 700 ms. */
@@ -296,6 +316,7 @@ export const useGame = create<Store>((set, get) => {
       ...(ex?.type === "exBurst" && !fastMode() ? { flash: { defId: ex.defId, at } } : {}),
       ...(changed ? { casting: null, party: [], blocker: null, abilityMenu: null, selection: [] } : {}),
     });
+    updateObserver?.(m.view, m.events);
     if (ex && !fastMode())
       setTimeout(() => {
         if (get().flash?.at === at) set({ flash: null });
@@ -354,6 +375,23 @@ export const useGame = create<Store>((set, get) => {
   };
 
   const sendSettings = (settings: ClientSettings) => get().session?.send({ type: "settings", settings });
+
+  /** A new game: "End turn" of the previous one no longer applies (its turn number would pass the new game's turns). */
+  const newSessionSettings = () => {
+    const settings = { ...get().settings, passUntilTurn: null };
+    set({ settings });
+    sendSettings(settings);
+  };
+
+  /** A decision the tutorial's guided step does not expect: refused with its reminder. */
+  const refused = (intent: PlayerIntent, partial = false): boolean => {
+    const v = get().view;
+    const why = v && decisionGuard ? decisionGuard(intent, v, partial) : null;
+    if (!why) return false;
+    playSound("error");
+    get().notify(why);
+    return true;
+  };
 
   return {
     screen: "lobby",
@@ -446,7 +484,39 @@ export const useGame = create<Store>((set, get) => {
         ...(fastMode() ? { fast: true } : {}),
         ...(opts.sandbox ? { sandbox: opts.sandbox } : {}),
       });
-      sendSettings(get().settings);
+      newSessionSettings();
+    },
+    startScenario(spec) {
+      get().session?.close();
+      queue.length = 0;
+      inFlight = false;
+      writer?.stop();
+      writer = null;
+      const session = new LocalSession(onMessage);
+      const defs: Record<string, CardDef> = {};
+      for (const code of scenarioCards(spec)) {
+        const c = findCard(code);
+        if (c) defs[code] = c;
+      }
+      preloadSounds();
+      set({ session, screen: "game", view: null, faces: {}, log: [], casting: null, party: [], blocker: null, replay: null });
+      session.send({
+        type: "start",
+        seed: 1,
+        playerName: t("You"),
+        aiName: t("Opponent"),
+        playerDeck: { main: [], lb: [] },
+        aiDeck: { main: [], lb: [] },
+        defs,
+        scenario: spec,
+        ...(fastMode() ? { fast: true } : {}),
+      });
+      newSessionSettings();
+    },
+    applySettings(partial) {
+      const settings = { ...get().settings, ...partial };
+      set({ settings });
+      sendSettings(settings);
     },
     resumeAtStartup() {
       const saved = loadSavedGame();
@@ -471,14 +541,15 @@ export const useGame = create<Store>((set, get) => {
         ...(saved.aiLevel ? { aiLevel: saved.aiLevel } : {}),
         ...(fastMode() ? { fast: true } : {}),
       });
-      sendSettings(get().settings);
+      newSessionSettings();
     },
     leaveGame() {
       if (replayTimer) clearInterval(replayTimer);
       replayTimer = null;
+      // A recorded game left: nothing to resume (a tutorial or a replay keeps the saved game).
+      if (writer) clearSavedGame();
       writer?.stop();
       writer = null;
-      clearSavedGame();
       get().session?.close();
       queue.length = 0;
       inFlight = false;
@@ -486,12 +557,13 @@ export const useGame = create<Store>((set, get) => {
     },
     decide(d) {
       if ((get().busy || inFlight) && d.type !== "concede") return;
+      if (refused(d)) return;
       inFlight = true;
       get().session?.send({ type: "decision", decision: d });
     },
     endTurn(hard = false) {
       const v = get().view;
-      if (!v) return;
+      if (!v || refused({ type: "endTurn" })) return;
       const settings = {
         ...get().settings,
         passUntilTurn: v.turn.number,
@@ -575,6 +647,14 @@ export const useGame = create<Store>((set, get) => {
       else if (options.length > 1) set({ abilityMenu: id });
     },
     beginCast(option) {
+      const intent: PlayerIntent =
+        option.type === "cast"
+          ? { type: "cast", card: option.card }
+          : { type: "activate", source: option.source, ability: option.ability };
+      if (refused(intent, true)) {
+        set({ abilityMenu: null });
+        return;
+      }
       const c: Casting = {
         option,
         stage: "targets",
@@ -614,6 +694,8 @@ export const useGame = create<Store>((set, get) => {
       get().session?.send({ type: "export" });
     },
     openReplay(record) {
+      // The replay of the game just finished: that game has nothing left to resume.
+      if (writer && get().view?.over) clearSavedGame();
       writer?.stop();
       writer = null;
       get().session?.close();

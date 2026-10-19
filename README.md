@@ -2,7 +2,7 @@
 
 A platform for playing the **Final Fantasy Trading Card Game** against an AI (three levels) and online against another player, in French or English. It is built on a **home-grown rules engine in TypeScript** that follows the Comprehensive Rules v3.3, and on the architecture of [Planecircle](https://github.com/DosPuppet/planecircle), the same author's Magic: The Gathering platform.
 
-**Status: under construction.** Lot A0 of [PLAN-A](docs/plans/PLAN-A.md) is done (repository scaffold). Nothing is playable yet.
+**Status:** Milestone 1 is done ([PLAN-A](docs/plans/PLAN-A.md), 19 October 2026): the two Starter Set 2025 decks against the AI or online, the deck builder, the tutorial, in French and English. Milestone 2, the L3 format, is planned in [PLAN-B](docs/plans/PLAN-B.md); the history is in [docs/history.md](docs/history.md).
 
 ## Scope
 
@@ -23,6 +23,7 @@ A platform for playing the **Final Fantasy Trading Card Game** against an AI (th
 
 ```bash
 npm install
+npm run dev          # http://localhost:5174
 npm run verify -- --ci
 ```
 
@@ -43,7 +44,7 @@ npm run verify -- --ci
 | `npx tsx tools/make-icons.ts` | The app's icons (`packages/client/public/icons`) |
 | `npm run server` | The online server on port 8788: WebSocket /ws, card images /ffimg/, the built client (`npm run build` first); games saved in `data/rooms` |
 | `npx tsx tools/rooms-check.ts [dir]` / `node --expose-gc --import tsx tools/load-test.ts` | Saved online games against the repository's engine (before a deployment) / memory per room |
-| `npm run verify -- --group <group>` | Check of a lot: types, Biome, tests (then, as they are written: coverage, bundle budget, fuzz, interface tests) |
+| `npm run verify -- --group <group>` | Check of a lot: types, Biome, coverage, bundle budget, tests, fuzz, the group's smoke test, interface tests when the client changed (Vite running) |
 | `npm run verify -- --full` | Full check, at the end of a series or before a merge |
 | `npm run verify -- --ci` | Continuous-integration check (GitHub Actions, on every push) |
 | `npm test` | Vitest |

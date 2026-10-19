@@ -1,6 +1,6 @@
 # CLAUDE.md — tracking and conventions for FinalCircle
 
-This file tracks the project between sessions: current state, working rules, pitfalls. The README presents the project; the current plan is `docs/plans/PLAN-A.md`; the history is in `docs/history.md`; open items are in `docs/backlog.md`.
+This file tracks the project between sessions: current state, working rules, pitfalls. The README presents the project; the current plan is `docs/plans/PLAN-B.md` (Milestone 1's, `PLAN-A.md`, is finished); the history is in `docs/history.md`; open items are in `docs/backlog.md`.
 
 ## Goal and scope
 
@@ -12,13 +12,14 @@ This file tracks the project between sessions: current state, working rules, pit
   - formats: "Standard" (all sets, official ban/restricted list) and "L3", both limited to the implemented cards.
 - Out of scope: Limited (sealed, draft), Title format, more than two players, best-of-three.
 
-## State (2026-10-18)
+## State (2026-10-19)
 
-- PLAN-A lots **A0** (scaffold), **A1** (rules digest), **A2** (engine model and infrastructure), **A3** (card data and deck legality), **A4** (engine core), **A5** (abilities, rules 2), **A6** (the 42 starter cards scripted and tested), **A7** (AI levels, fuzz, golden games), **A8** (game screen: board, payment, prompts, attacks and blocks, EX Burst, animations, sounds, phones; interface smokes), **A9** (deck builder, sharing, home screen, replay viewer), **A10** (tutorial: ten lessons) and **A11** (online duel: server and client; A11c: images of the exclusives, card descriptions) and **A12** (deployment files and tools; the VPS is installed by the user, `docs/deployment.md`) done. Next: A13 (close: verify --full, history, PLAN-B, merge to master).
+- **Milestone 1 done** (PLAN-A, lots A0 to A13, 2026-10-19; `docs/history.md`): engine (rules 3), the 42 starter cards, AI, game screen, deck builder, replay viewer, tutorial, online duel, deployment files (the VPS is installed by the user, `docs/deployment.md`). `dev` merged into `master`.
+- Next: PLAN-B lot **B0** (card groups `s28`/`s29`, debt guard). Set 30 (Memories of Life) is released on 2026-11-13: L3 then becomes sets 28–30.
 
 ## Documents
 
-- `docs/plans/PLAN-A.md`: Milestone 1, lots A0 to A13; tracking at the end.
+- `docs/plans/PLAN-B.md`: Milestone 2 (L3), lots B0 to B5; tracking at the end. `docs/plans/PLAN-A.md`: Milestone 1, finished.
 - `docs/rules.md`: digest of the Comprehensive Rules v3.3 by section, the interpretations taken where the rules are unclear (I1…), the English–French glossary. **Read before changing the engine.** Exact wording: `npx tsx tools/rules-text.ts [--fetch]` writes the PDF and its text to `data/cache/rules/` (outside Git).
 - `docs/engine.md`: map of the engine files and the rules of its code. **Read before changing the engine.**
 - `docs/approximations.md`: known approximations. **Every new approximation is added there**; every approximation lifted is removed from it.

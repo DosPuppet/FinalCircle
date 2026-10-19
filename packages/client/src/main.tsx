@@ -6,6 +6,7 @@ import { App } from "./App";
 import { playSound, unlockAudio, useAudio } from "./audio/sfx";
 import { decodeDeck, sharedDeckData } from "./decks/share";
 import { codeFromUrl } from "./lobby/Online";
+import { prefetchGameWorker } from "./session";
 import { flushSave, useGame } from "./store";
 import { lessonById } from "./tutorial/lessons";
 import { useTutorial } from "./tutorial/store";
@@ -30,6 +31,16 @@ if (import.meta.env.DEV) {
         }
       : { lesson: tuto.lessonId, finished: tuto.finished };
   };
+}
+
+// Production: service worker (the application and the card images cached, offline start; public/sw.js).
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/sw.js")
+    .then(() => navigator.serviceWorker.ready)
+    // The game worker cached from the first visit (a game against the AI offline).
+    .then(() => setTimeout(prefetchGameWorker, 3000))
+    .catch((e) => console.warn("Service worker not registered:", e));
 }
 
 const root = document.getElementById("root");

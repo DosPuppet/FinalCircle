@@ -207,6 +207,19 @@ if (existsSync("tools/fuzz.ts")) {
 if (full && !flag("no-bench"))
   ok = (await group([{ name: "bench", cmd: "npx tsx tools/bench.ts", show: /^Targets .*$/, needs: "tools/bench.ts" }])) && ok;
 
+// The production build (full verification only): the compiled server started on a free port, with the built client
+// (built by the bundle step), checked end to end (deploy-check: page, images, online play, the AI seat).
+if (full && !ci)
+  ok =
+    (await group([
+      {
+        name: "deploy-check",
+        cmd: "npm run build:server && npx tsx tools/deploy-check.ts",
+        show: /^ok: .*serves the game.*$/,
+        needs: "tools/deploy-check.ts",
+      },
+    ])) && ok;
+
 // 4. Interface tests, if the client, the view or the protocol changed (or --ui, or --full), from lot A8.
 const UI_QUEUES: Step[][] = [
   [

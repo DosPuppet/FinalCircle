@@ -52,6 +52,8 @@ export class Client {
       // Decision refused: no new view will arrive, so play again cautiously (pass, no attack).
       const view = this.lastView;
       if (this.bot && m.type === "error" && m.code === "rules" && view) setImmediate(() => this.play(view));
+      // Message dropped by the server's rate limit (a bot answers faster than a player): sent again a moment later.
+      if (this.bot && m.type === "error" && m.code === "busy" && view) setTimeout(() => this.play(view), 1100);
     });
   }
 

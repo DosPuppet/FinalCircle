@@ -37,6 +37,10 @@ npm run verify -- --ci
 | `npx tsx tools/{lang,mobile,replay}-smoke.ts` | Both languages, phones in portrait and landscape, a saved game resumed after a reload (Vite running; run by `verify` when the client changed) |
 | `npx tsx tools/bundle-size.ts` | Builds the client and checks each chunk against its budget |
 | `npx tsx tools/missing-images.ts` | Fetches once the images Square Enix's CDN lacks (the 8 starter exclusives, from TCGplayer) into `data/images`, outside Git, where the relay serves them |
+| `npm run build` / `npm run build:server` | The interface (`packages/client/dist`) / the compiled server (`packages/server/dist`, run by pm2 without tsx) |
+| `npx tsx tools/deploy-check.ts [url]` | Checks a running server end to end (page, images, online play, the AI); without a URL, starts the compiled server |
+| `npx tsx tools/warm-images.ts <url>` | Fills a deployed site's image cache (every card image through its relay, 1.5 s apart) |
+| `npx tsx tools/make-icons.ts` | The app's icons (`packages/client/public/icons`) |
 | `npm run server` | The online server on port 8788: WebSocket /ws, card images /ffimg/, the built client (`npm run build` first); games saved in `data/rooms` |
 | `npx tsx tools/rooms-check.ts [dir]` / `node --expose-gc --import tsx tools/load-test.ts` | Saved online games against the repository's engine (before a deployment) / memory per room |
 | `npm run verify -- --group <group>` | Check of a lot: types, Biome, tests (then, as they are written: coverage, bundle budget, fuzz, interface tests) |
@@ -48,6 +52,10 @@ npm run verify -- --ci
 | `npx tsx tools/fr-glossary.ts` | Checks the English–French glossary of `docs/rules.md` against the official texts |
 | `npx tsx tools/rules-text.ts [--fetch]` | Text of the Comprehensive Rules PDF, for lookups by section (outside Git) |
 | `npm run typecheck` / `npm run lint` | Strict TypeScript / Biome |
+
+## Deployment
+
+`docs/deployment.md`: pm2 and nginx next to Planecircle on a VPS (`deploy/ecosystem.config.cjs`, `deploy/nginx-finalcircle.conf`, `deploy/update.sh`), the image cache, checks, updates and rollback.
 
 ## Architecture
 

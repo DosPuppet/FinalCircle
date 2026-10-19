@@ -21,13 +21,15 @@ async function fits(page: Page, where: string, selectors: string[]): Promise<voi
   const r = await page.evaluate((sels) => {
     const d = document.documentElement;
     const out: string[] = [];
-    if (d.scrollWidth > innerWidth + 1) out.push(`page ${d.scrollWidth}px wide for ${innerWidth}px`);
+    // A phone widens its layout viewport (innerWidth) to fit content that is too wide: the screen is the measure.
+    const width = Math.min(innerWidth, screen.width);
+    if (d.scrollWidth > width + 1) out.push(`page ${d.scrollWidth}px wide for ${width}px`);
     if (d.scrollHeight > innerHeight + 1) out.push(`page ${d.scrollHeight}px high for ${innerHeight}px`);
     for (const sel of sels) {
       const el = document.querySelector(sel);
       if (!el) continue;
       const b = el.getBoundingClientRect();
-      if (b.left < -1 || b.top < -1 || b.right > innerWidth + 1 || b.bottom > innerHeight + 1)
+      if (b.left < -1 || b.top < -1 || b.right > width + 1 || b.bottom > innerHeight + 1)
         out.push(
           `${sel} outside the screen (${Math.round(b.left)},${Math.round(b.top)} – ${Math.round(b.right)},${Math.round(b.bottom)})`,
         );
@@ -53,7 +55,7 @@ for (const [name, width, height] of [
   const end = await playGame(page, MAX, {
     moment: async (moment) => {
       await page.screenshot({ path: join(OUT, `${name}-${moment}.png`) });
-      await fits(page, `${name} ${moment}`, [".hand", ".main-button", ".payment-tray", ".choice-panel", ".modal"]);
+      await fits(page, `${name} ${moment}`, [".hand", ".main-button", ".settings", ".payment-tray", ".choice-panel", ".modal"]);
     },
     step: async (i, s) => {
       // Once, on the player's main phase: a long press on a card of the hand shows it large, a tap closes it.

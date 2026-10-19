@@ -148,6 +148,8 @@ interface Store {
   hover: string | null;
   /** The card held under a finger (touch screens): shown large over the board until a tap. */
   peek: string | null;
+  /** The glossary window, open on a term or at its top (`Glossary`). */
+  glossary: { focus?: string } | null;
   /** The ability chooser of a card with several abilities. */
   abilityMenu: ObjectId | null;
   /** The online game in progress (null: a local game, a replay or no game). */
@@ -622,6 +624,7 @@ export const useGame = create<Store>((set, get) => {
     blocker: null,
     hover: null,
     peek: null,
+    glossary: null,
     hits: {},
     flash: null,
     abilityMenu: null,

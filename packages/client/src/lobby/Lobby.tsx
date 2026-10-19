@@ -10,6 +10,7 @@ import { SoundControl } from "../audio/SoundControl";
 import { ElementIcon } from "../board/ElementIcon";
 import { DeckArt } from "../decks/DeckArt";
 import { deckDescription, deckName, useAllDecks } from "../decks/store";
+import { GlossaryButton } from "../glossary/Glossary";
 import { imagesOn, setImagesOn } from "../images";
 import { LangToggle } from "../LangToggle";
 import { useLocalize, useT } from "../localize";
@@ -164,6 +165,7 @@ export function Lobby() {
           >
             {t("Learn to play")}
           </button>
+          <GlossaryButton />
           <button type="button" className="btn" onClick={() => openDecks(null)} data-testid="open-decks">
             {t("Deck builder")}
           </button>

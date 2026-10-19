@@ -3,8 +3,8 @@
  * ring. The ring does not catch clicks: the element stays usable underneath.
  */
 import type { GameView } from "@finalcircle/engine";
-import { Fragment, useEffect, useRef, useState } from "react";
-import { inline } from "../board/CardText";
+import { useEffect, useRef, useState } from "react";
+import { RichText } from "../board/CardText";
 import { useT } from "../localize";
 import { useGame } from "../store";
 import { textIn } from "../translate";
@@ -123,20 +123,6 @@ function useCoachLayout(
     return () => cancelAnimationFrame(raf);
   }, [target, view, bubble]);
   return layout;
-}
-
-/** Guide text: **bold** and CP symbols (《火》, 《S》…). */
-export function RichText({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return (
-    <>
-      {parts.map((p, i) => {
-        const key = `${i}-${p}`;
-        if (p.startsWith("**")) return <strong key={key}>{inline(p.slice(2, -2), key, 15)}</strong>;
-        return <Fragment key={key}>{inline(p, key, 15)}</Fragment>;
-      })}
-    </>
-  );
 }
 
 export function Coach() {

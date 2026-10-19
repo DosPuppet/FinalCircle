@@ -45,7 +45,7 @@ export function CardDetails({ face, obj }: { face: CardFace; obj?: ObjectView | 
       </div>
       {text ? (
         <div className="details-text">
-          <CardText text={text} size={14} />
+          <CardText text={text} size={14} terms={lang} />
         </div>
       ) : null}
       {onField ? (

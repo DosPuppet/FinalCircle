@@ -1,4 +1,5 @@
 /** Tutorial menu (from Planecircle): play everything through, resume where you left off, or choose a lesson. */
+import { GlossaryButton } from "../glossary/Glossary";
 import { useT } from "../localize";
 import { useGame } from "../store";
 import { textIn } from "../translate";
@@ -38,6 +39,7 @@ export function TutorialMenu() {
           >
             {progress.done.length > 0 || resume ? t("Start everything over") : t("Play every lesson")}
           </button>
+          <GlossaryButton className="btn big" />
           <button type="button" className="btn big" onClick={() => useGame.setState({ screen: "lobby" })}>
             {t("Back")}
           </button>

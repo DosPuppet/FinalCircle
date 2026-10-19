@@ -6,6 +6,7 @@ import type { AttackStep, CardFace, GameView, ObjectView, Phase, PlayerId } from
 import { useEffect, useRef, useState } from "react";
 import { SoundControl } from "../audio/SoundControl";
 import { Dialog } from "../Dialog";
+import { GlossaryButton } from "../glossary/Glossary";
 import { faceName, PHASE_LABEL, STEP_LABEL } from "../i18n";
 import { LangToggle } from "../LangToggle";
 import { useLocalize, useT } from "../localize";
@@ -238,7 +239,7 @@ function PhaseTrack({ view }: { view: GameView }) {
     <div className="phase-track" data-tuto="phases">
       {PHASES.map((p) => (
         <span key={p} className={`phase${view.turn.phase === p ? " on" : ""}`}>
-          {textIn(lang, PHASE_LABEL[p])}
+          <span className="phase-name">{textIn(lang, PHASE_LABEL[p])}</span>
           {p === "attack" && view.turn.phase === "attack" ? (
             <span className="steps">
               {STEPS.map((st) => (
@@ -514,6 +515,7 @@ function Settings() {
             />
             {t("Full control")}
           </label>
+          <GlossaryButton />
           {!over ? (
             <button type="button" className="btn danger" onClick={() => decide({ type: "concede" })}>
               {t("Concede")}

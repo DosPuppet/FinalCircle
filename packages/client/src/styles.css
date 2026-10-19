@@ -1321,8 +1321,9 @@ legend {
 
 /* Phones and small windows: no side panel (the preview comes on a long press), only the current phase is named. */
 @media (max-width: 760px), (max-height: 500px) {
+  /* minmax(0, …): a long line (the attack's) must shrink, not widen the page past the screen. */
   .game {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .side-panel {
@@ -1334,7 +1335,19 @@ legend {
   }
 
   .phase-track {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* During an attack, only its current step is named (the step tells the phase). */
+  .step:not(.on),
+  .phase.on:has(.step.on) .phase-name {
+    display: none;
+  }
+
+  .phase.on {
+    white-space: nowrap;
   }
 
   .center-strip {
@@ -1346,6 +1359,17 @@ legend {
 
   .attack-info.hint {
     display: none;
+  }
+
+  .attack-info {
+    gap: 2px 8px;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .attack-info span {
+    flex-wrap: wrap;
+    min-width: 0;
   }
 
   .main-button {
@@ -1399,7 +1423,7 @@ legend {
   }
 
   .table {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr) auto auto;
     grid-template-areas:
       "oppzones"
@@ -1459,9 +1483,20 @@ legend {
   }
 
   .table {
-    grid-template-columns: 1fr minmax(150px, 200px);
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 200px);
     padding: 2px 6px;
     gap: 2px;
+  }
+
+  /* Seven damage cards and their count fit the zones' column. */
+  .damage-zone {
+    gap: 2px;
+    --card-w: 16px;
+  }
+
+  .damage-slot {
+    width: 18px;
+    height: 25px;
   }
 
   .field {
@@ -2296,4 +2331,129 @@ input.deck-title {
   .deck-art {
     height: 60px;
   }
+}
+
+/* Glossary terms in a card's description (Term): dotted underline, the definition in a bubble. */
+.term {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  color: var(--accent);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.term:has(> svg, > .ex-burst) {
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent);
+}
+
+.term[aria-expanded="true"] {
+  border-radius: 3px;
+  background: rgba(108, 195, 255, 0.18);
+}
+
+.term:focus-visible {
+  outline: 1px solid var(--accent);
+  border-radius: 3px;
+}
+
+.term-tip {
+  position: fixed;
+  z-index: 200;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 16px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: #161d27;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.term-tip svg {
+  vertical-align: -3px;
+}
+
+.term-tip-more {
+  align-self: flex-end;
+}
+
+/* The glossary window: a search, then the terms by group; only the list scrolls. */
+.modal.glossary {
+  width: min(720px, calc(100vw - 24px));
+  overflow: hidden;
+}
+
+.glossary-search {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text);
+  font: inherit;
+}
+
+.glossary-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.glossary-list h3 {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.glossary-list dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.glossary-entry {
+  padding: 6px 8px;
+  border-left: 2px solid var(--line);
+  border-radius: 4px;
+}
+
+.glossary-entry.focus {
+  border-left-color: var(--gold);
+  background: rgba(230, 195, 106, 0.1);
+}
+
+.glossary-entry dt {
+  font-weight: 700;
+}
+
+.glossary-entry dt svg,
+.glossary-entry dd svg {
+  vertical-align: -3px;
+}
+
+.glossary-entry dd {
+  margin: 2px 0 0;
+  line-height: 1.45;
 }

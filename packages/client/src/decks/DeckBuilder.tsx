@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { Card } from "../board/Card";
 import { ElementIcon } from "../board/ElementIcon";
 import { CardDetails } from "../board/Preview";
+import { GlossaryButton } from "../glossary/Glossary";
 import { faceName, TYPE_LABEL } from "../i18n";
 import { LangToggle } from "../LangToggle";
 import { FormatChoice } from "../lobby/FormatChoice";
@@ -444,6 +445,7 @@ export function DeckBuilder() {
             </button>
           </div>
         ) : null}
+        <GlossaryButton className="btn ghost" />
         <LangToggle />
       </header>
       {deck ? (

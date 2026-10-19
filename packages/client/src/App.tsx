@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Board } from "./board/Board";
 import { DeckBuilder } from "./decks/DeckBuilder";
+import { Glossary } from "./glossary/Glossary";
 import { Lobby } from "./lobby/Lobby";
 import { Online } from "./lobby/Online";
 import { useLocalize } from "./localize";
@@ -73,6 +74,7 @@ export function App() {
       ) : (
         <GameScreen />
       )}
+      <Glossary />
       <Toast />
     </>
   );

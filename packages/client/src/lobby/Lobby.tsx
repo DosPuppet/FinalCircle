@@ -8,6 +8,7 @@ import { isGameRecord } from "@finalcircle/engine";
 import { useState } from "react";
 import { SoundControl } from "../audio/SoundControl";
 import { ElementIcon } from "../board/ElementIcon";
+import { DeckArt } from "../decks/DeckArt";
 import { deckDescription, deckName, useAllDecks } from "../decks/store";
 import { imagesOn, setImagesOn } from "../images";
 import { LangToggle } from "../LangToggle";
@@ -59,6 +60,7 @@ function DeckChoice({
         return (
           <label key={d.id} className={`deck-option${value === d.id ? " on" : ""}${legal ? "" : " illegal"}`}>
             <input type="radio" name={name} checked={value === d.id} onChange={() => onChange(d.id)} />
+            <DeckArt deck={d} />
             <span className="deck-elements">
               {d.elements.map((e) => (
                 <ElementIcon key={e} element={e} size={22} />

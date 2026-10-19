@@ -8,7 +8,7 @@
   "description": "Zack et Wuk Lamat mènent l'attaque pendant que Palom, Ifrit et les Soutiens brûlent les Avants adverses ; deck Limit Break avec Vincent et Ultima Arma."
  },
  "elements": ["fire", "water"],
- "cover": "22-112R",
+ "cover": "27-123S",
  "source": "Unofficial list (Square Enix does not publish starter lists): Materia Hunter product 229, as transcribed in github.com/delerium22/fftcg-game, decks/starter-2025-vol1.txt and starter-2025-vol1-lb.txt (2026-09-29); read 2026-10-18.",
  "main": [
   [3, "27-122S"],

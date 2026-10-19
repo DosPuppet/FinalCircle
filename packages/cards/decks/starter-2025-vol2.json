@@ -8,7 +8,7 @@
   "description": "Cloud et Lusso percent les défenses adverses pendant que les Avants Terre se renforcent ; Odin et Ramuh ouvrent la voie."
  },
  "elements": ["earth", "lightning"],
- "cover": "24-063H",
+ "cover": "27-124S",
  "source": "Unofficial list (Square Enix does not publish starter lists): main deck from github.com/delerium22/fftcg-game, decks/starter-2025-vol2.txt at commit ee46405 (2026-08-25, before its test edits; that project reports Materia Hunter product 230 matching the retail deck card for card). LB deck partial: only Noctis and Maat are known (decks/starter-2025-vol2-lb.txt); the other four LB cards are unknown. Read 2026-10-18.",
  "main": [
   [3, "27-124S"],

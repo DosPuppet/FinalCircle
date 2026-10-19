@@ -110,9 +110,15 @@ export function findDeck(id: string): DeckList | undefined {
   return deckById(id) ?? useDecks.getState().decks.find((d) => d.id === id);
 }
 
-/** The card shown for a deck: its cover, otherwise its most frequent card of the highest cost. */
+/**
+ * The card shown for a deck: its cover (a prebuilt deck's headline card), otherwise its most frequent Forward of the
+ * highest cost (any card if it has no Forward).
+ */
 export function deckCover(deck: DeckList): string | undefined {
   if (deck.cover) return deck.cover;
-  const best = [...deck.main].sort((a, b) => b[0] - a[0] || (CARDS[b[1]]?.cost ?? 0) - (CARDS[a[1]]?.cost ?? 0))[0];
+  const forward = (code: string) => (findCard(code)?.type === "Forward" ? 1 : 0);
+  const best = [...deck.main].sort(
+    (a, b) => forward(b[1]) - forward(a[1]) || b[0] - a[0] || (CARDS[b[1]]?.cost ?? 0) - (CARDS[a[1]]?.cost ?? 0),
+  )[0];
   return best?.[1];
 }

@@ -8,6 +8,7 @@ import { FORMAT_LABELS, findCard, validateDeck } from "@finalcircle/cards";
 import { useState } from "react";
 import { SoundControl } from "../audio/SoundControl";
 import { ElementIcon } from "../board/ElementIcon";
+import { DeckArt } from "../decks/DeckArt";
 import { deckName, useAllDecks } from "../decks/store";
 import { LangToggle } from "../LangToggle";
 import { useLocalize, useT } from "../localize";
@@ -122,6 +123,7 @@ export function Online() {
                 legal.map((d) => (
                   <label key={d.id} className={`deck-option${deck?.id === d.id ? " on" : ""}`}>
                     <input type="radio" name="online-deck" checked={deck?.id === d.id} onChange={() => setDeckId(d.id)} />
+                    <DeckArt deck={d} />
                     <span className="deck-elements">
                       {d.elements.map((e) => (
                         <ElementIcon key={e} element={e} size={22} />

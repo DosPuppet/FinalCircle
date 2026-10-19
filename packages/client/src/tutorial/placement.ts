@@ -17,6 +17,14 @@ export interface Obstacle {
   weight: number;
 }
 
+/** Edges of the screen the bubble must stay out of (notch, status bar, home bar). */
+export interface Inset {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
 const MARGIN = 12;
 
 const overlap = (a: Rect, b: Rect): number =>
@@ -28,13 +36,17 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), M
 export function placeBubble(
   target: Rect | null,
   size: { w: number; h: number },
-  viewport: { w: number; h: number },
+  viewport: { w: number; h: number; inset?: Inset },
   obstacles: Obstacle[],
   gap = 20,
 ): { left: number; top: number } {
   const { w, h } = size;
-  const maxX = viewport.w - w - MARGIN;
-  const maxY = viewport.h - h - MARGIN;
+  const inset = viewport.inset ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  const minX = inset.left + MARGIN;
+  const minY = inset.top + MARGIN;
+  const maxX = viewport.w - inset.right - w - MARGIN;
+  const maxY = viewport.h - inset.bottom - h - MARGIN;
+  const topY = inset.top + 70;
   const near: [number, number][] = target
     ? [
         [target.x + target.w / 2 - w / 2, target.y + target.h + gap], // below
@@ -44,14 +56,14 @@ export function placeBubble(
       ]
     : [[(viewport.w - w) / 2, viewport.h * 0.14]];
   const edges: [number, number][] = [
-    [MARGIN, 70],
-    [maxX, 70],
-    [MARGIN, (viewport.h - h) / 2],
+    [minX, topY],
+    [maxX, topY],
+    [minX, (viewport.h - h) / 2],
     [maxX, (viewport.h - h) / 2],
     [maxX, maxY],
-    [(viewport.w - w) / 2, 70],
+    [(viewport.w - w) / 2, topY],
   ];
-  const all = [...near, ...edges].map(([x, y]) => ({ x: clamp(x, MARGIN, maxX), y: clamp(y, MARGIN, maxY), w, h }));
+  const all = [...near, ...edges].map(([x, y]) => ({ x: clamp(x, minX, maxX), y: clamp(y, minY, maxY), w, h }));
   const weighted = target ? [...obstacles, { r: target, weight: 20 }] : obstacles;
   let best = all[0] as Rect;
   let bestScore = Number.POSITIVE_INFINITY;

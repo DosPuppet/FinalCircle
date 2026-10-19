@@ -44,6 +44,10 @@ export function useLongPress(onLong: (() => void) | undefined) {
     },
     onPointerUp: clear,
     onPointerCancel: clear,
+    // The browser's own long-press menu (save the image…) would hide the preview; a mouse keeps its right click.
+    onContextMenu(e: { preventDefault(): void }) {
+      if (isTouch()) e.preventDefault();
+    },
     onClickCapture(e: { stopPropagation(): void; preventDefault(): void }) {
       if (!justLongPressed()) return;
       e.stopPropagation();

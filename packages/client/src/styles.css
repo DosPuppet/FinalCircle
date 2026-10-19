@@ -16,6 +16,12 @@
   --card-h: calc(var(--card-w) * 88 / 63);
   --hand-w: clamp(64px, 6.8vw, 108px);
   --radius: 8px;
+  /* Notch, status bar and home bar (iPhone, PWA with a translucent status bar): the app stays inside them. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --app-h: calc(100dvh - var(--safe-top) - var(--safe-bottom));
   color-scheme: dark;
 }
 
@@ -28,6 +34,18 @@ body,
 #root {
   margin: 0;
   height: 100%;
+}
+
+#root {
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}
+
+/* Touch screens: a long press shows the game's preview, not the browser's image menu or a text selection. */
+img,
+.card-slot {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -127,7 +145,7 @@ h2,
 
 /* Lobby */
 .lobby {
-  height: 100dvh;
+  height: var(--app-h);
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -284,13 +302,13 @@ legend {
 .game {
   display: grid;
   grid-template-columns: minmax(200px, 260px) 1fr;
-  height: 100dvh;
+  height: var(--app-h);
 }
 
 .loading {
   display: grid;
   place-items: center;
-  height: 100dvh;
+  height: var(--app-h);
   color: var(--dim);
 }
 
@@ -1055,7 +1073,7 @@ legend {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(var(--hand-w) * 88 / 63 + 12px);
+  bottom: calc(var(--hand-w) * 88 / 63 + 12px + var(--safe-bottom));
   z-index: 20;
   background: rgba(24, 34, 58, 0.96);
   border: 1px solid var(--accent);
@@ -1102,6 +1120,49 @@ legend {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
+}
+
+/* Phones (PromptPanel): a panel can shrink to one line at the top of the screen, to see and click the board under it. */
+.panel-min {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.choice-panel.min,
+.payment-tray.min {
+  top: calc(var(--safe-top) + 4px);
+  bottom: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 42px 6px 10px;
+}
+
+.choice-panel.min > :not(.prompt-text, .prompt-actions, .panel-min),
+.payment-tray.min > :not(.pay-chosen, .pay-actions, .panel-min),
+.payment-tray.min .pay-chosen .dim {
+  display: none;
+}
+
+.choice-panel.min .prompt-text {
+  flex: 1 1 50%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.payment-tray.min .pay-chosen {
+  flex: 1 1 auto;
 }
 
 .pay-cost,
@@ -1199,6 +1260,7 @@ legend {
   display: grid;
   place-items: center;
   z-index: 40;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
 }
 
 .modal {
@@ -1207,7 +1269,7 @@ legend {
   border-radius: 12px;
   padding: 16px 20px;
   width: min(560px, calc(100vw - 24px));
-  max-height: calc(100dvh - 32px);
+  max-height: calc(var(--app-h) - 32px);
   overflow-y: auto;
   outline: none;
   display: flex;
@@ -1228,7 +1290,7 @@ legend {
 
 .toast {
   position: fixed;
-  top: 16px;
+  top: calc(var(--safe-top) + 16px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--panel);
@@ -1246,7 +1308,7 @@ legend {
   background: rgba(4, 6, 12, 0.7);
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px);
 }
 
 .touch-preview .preview {
@@ -1305,6 +1367,27 @@ legend {
   .modal {
     padding: 12px 14px;
     gap: 8px;
+  }
+
+  .panel-min {
+    display: block;
+  }
+
+  .choice-panel,
+  .payment-tray {
+    padding-right: 42px;
+  }
+
+  .choice-options {
+    max-height: 28dvh;
+  }
+
+  /* The guide's bubble leaves most of the board visible. */
+  .coach {
+    max-height: 45dvh;
+    font-size: 0.8125rem;
+    padding: 9px 11px;
+    gap: 6px;
   }
 }
 
@@ -1463,7 +1546,7 @@ legend {
 
 /* Deck builder: the catalog, the deck, the preview. */
 .deck-builder {
-  height: 100dvh;
+  height: var(--app-h);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
 }
@@ -1881,7 +1964,7 @@ input.deck-title {
   color: var(--text);
   font-size: 0.875rem;
   line-height: 1.45;
-  max-height: calc(100dvh - 16px);
+  max-height: calc(var(--app-h) - 16px);
   overflow-y: auto;
   transition:
     left 0.2s,
@@ -1931,8 +2014,8 @@ input.deck-title {
 .coach-reopen {
   position: fixed;
   z-index: 150;
-  left: 12px;
-  top: 12px;
+  left: calc(var(--safe-left) + 12px);
+  top: calc(var(--safe-top) + 12px);
   padding: 6px 12px;
   border-radius: 16px;
   border: 1px solid rgba(240, 184, 74, 0.55);
@@ -2204,7 +2287,7 @@ input.deck-title {
 }
 
 .touch-preview .preview {
-  max-height: calc(100dvh - 32px);
+  max-height: calc(var(--app-h) - 32px);
   overflow-y: auto;
 }
 

@@ -10,6 +10,7 @@ import { Dialog } from "../Dialog";
 import { faceName } from "../i18n";
 import { useLocalize, useLocalizedView, useT } from "../localize";
 import { chooseOf, priorityActions, targetsOk, useGame } from "../store";
+import { PromptPanel } from "./PromptPanel";
 
 type ChoiceView = Extract<NonNullable<GameView["pending"]>, { kind: "choice" }>;
 
@@ -80,7 +81,7 @@ function PickPanel({ view, p, req }: { view: GameView; p: ChoiceView; req: Extra
   const shown = req.options.filter((id) => !onBoard.has(id) || req.labels?.[id]);
   const valid = selection.length >= req.min && selection.length <= req.max;
   return (
-    <div className="choice-panel" role="dialog" aria-label={req.prompt} data-testid="choice">
+    <PromptPanel className="choice-panel" label={req.prompt} testId="choice">
       <SourceCard source={p.source} />
       <p className="prompt-text">{req.prompt}</p>
       {shown.length ? (
@@ -119,7 +120,7 @@ function PickPanel({ view, p, req }: { view: GameView; p: ChoiceView; req: Extra
           {selection.length === 0 && req.min === 0 ? t("None") : t("Confirm")}
         </button>
       </div>
-    </div>
+    </PromptPanel>
   );
 }
 
@@ -323,7 +324,7 @@ function MulliganPrompt({ view }: { view: GameView }) {
   const p = view.pending;
   if (p?.kind !== "mulligan" || p.player !== view.viewer) return null;
   return (
-    <div className="choice-panel mulligan" role="dialog" aria-label={t("Your opening hand")} data-testid="mulligan">
+    <PromptPanel className="choice-panel mulligan" label={t("Your opening hand")} testId="mulligan">
       <p className="prompt-text">
         {p.mulliganed
           ? t("Your new hand of 5 cards.")
@@ -339,7 +340,7 @@ function MulliganPrompt({ view }: { view: GameView }) {
           {t("Keep")}
         </button>
       </div>
-    </div>
+    </PromptPanel>
   );
 }
 
@@ -350,7 +351,7 @@ function DiscardPrompt({ view }: { view: GameView }) {
   const p = view.pending;
   if (p?.kind !== "discard" || p.player !== view.viewer) return null;
   return (
-    <div className="choice-panel" role="dialog" aria-label={t("Discard")} data-testid="discard">
+    <PromptPanel className="choice-panel" label={t("Discard")} testId="discard">
       <p className="prompt-text">
         {t("End of the turn: discard down to 5 cards. Click {n} card(s) of your hand.", { n: p.count })}
       </p>
@@ -364,7 +365,7 @@ function DiscardPrompt({ view }: { view: GameView }) {
           {t("Discard ({n}/{count})", { n: selection.length, count: p.count })}
         </button>
       </div>
-    </div>
+    </PromptPanel>
   );
 }
 
@@ -433,7 +434,7 @@ function TargetsBanner() {
   const off = [...new Set(choose.flatMap((o) => o.options))].filter((x) => !onBoard.has(x));
   const objects = objectsOf(view);
   return (
-    <div className="choice-panel targets" role="dialog" aria-label={t("Choose the targets")} data-testid="targets">
+    <PromptPanel className="choice-panel targets" label={t("Choose the targets")} testId="targets">
       <p className="prompt-text">
         <b>{obj ? faceName(faces[obj.defId], lang) : ""}</b> — {t("Choose the targets: {n} / {max}", { n: have, max: want })}
       </p>
@@ -462,7 +463,7 @@ function TargetsBanner() {
           {t("Confirm")}
         </button>
       </div>
-    </div>
+    </PromptPanel>
   );
 }
 

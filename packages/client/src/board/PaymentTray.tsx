@@ -7,6 +7,7 @@
 import { cpTotal, type Element, type ObjectId } from "@finalcircle/engine";
 import { faceName } from "../i18n";
 import { useLocalize, useT } from "../localize";
+import { PromptPanel } from "../prompts/PromptPanel";
 import { paymentOk, useGame } from "../store";
 import { Card } from "./Card";
 import { ElementIcon, GenericCp } from "./ElementIcon";
@@ -44,7 +45,7 @@ export function PaymentTray() {
   const source = option.type === "cast" ? option.card : option.source;
   const face = faces[defOf(source)];
   return (
-    <div className="payment-tray" role="dialog" aria-label={t("CP payment")} data-tuto="payment">
+    <PromptPanel className="payment-tray" label={t("CP payment")} tuto="payment">
       <div className="pay-head">
         <Card face={face} className="pay-card" />
         <div>
@@ -128,6 +129,6 @@ export function PaymentTray() {
           {t("Confirm")}
         </button>
       </div>
-    </div>
+    </PromptPanel>
   );
 }

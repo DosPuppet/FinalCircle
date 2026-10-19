@@ -9,7 +9,7 @@ import { useT } from "../localize";
 import { useGame } from "../store";
 import { textIn } from "../translate";
 import { LESSONS, lessonById } from "./lessons";
-import { placeBubble, type Rect } from "./placement";
+import { type Inset, placeBubble, type Rect } from "./placement";
 import { stepText, type Target } from "./runtime";
 import { useTutorial } from "./store";
 
@@ -71,6 +71,15 @@ const keyOf = (r: Rect | null) => (r ? `${Math.round(r.x)},${Math.round(r.y)},${
 const GAP = 14;
 const PAD = 6;
 
+/** The safe areas of the screen (notch, status bar, home bar): the padding of `#root` (styles.css). */
+function safeInset(): Inset {
+  const root = document.getElementById("root");
+  if (!root) return { top: 0, right: 0, bottom: 0, left: 0 };
+  const cs = getComputedStyle(root);
+  const px = (v: string) => Number.parseFloat(v) || 0;
+  return { top: px(cs.paddingTop), right: px(cs.paddingRight), bottom: px(cs.paddingBottom), left: px(cs.paddingLeft) };
+}
+
 /** Ring around the target and position of the bubble, followed every few frames (cards move, the window resizes). */
 function useCoachLayout(
   target: Target | undefined,
@@ -95,7 +104,13 @@ function useCoachLayout(
           .map((el) => rectOf(el))
           .filter((r): r is Rect => !!r)
           .map((r) => ({ r, weight: 1 }));
-        const pos = placeBubble(ring, size, { w: window.innerWidth, h: window.innerHeight }, obstacles, GAP + PAD);
+        const pos = placeBubble(
+          ring,
+          size,
+          { w: window.innerWidth, h: window.innerHeight, inset: safeInset() },
+          obstacles,
+          GAP + PAD,
+        );
         const key = `${keyOf(ring)}|${Math.round(pos.left)},${Math.round(pos.top)}`;
         if (key !== last.current) {
           last.current = key;
@@ -225,11 +240,10 @@ export function Coach() {
                 </button>
               ) : null}
               <span className="coach-spacer" />
-              {step.free ? (
-                <button type="button" className="btn small ghost" onClick={() => setHidden(true)} title={t("Hide the guide")}>
-                  {t("Hide")}
-                </button>
-              ) : null}
+              {/* Always: on a phone the bubble may cover what the step asks to click. */}
+              <button type="button" className="btn small ghost" onClick={() => setHidden(true)} title={t("Hide the guide")}>
+                {t("Hide")}
+              </button>
               <button type="button" className="btn small ghost" onClick={tuto.restart} title={t("Restart the lesson")}>
                 {t("Restart")}
               </button>

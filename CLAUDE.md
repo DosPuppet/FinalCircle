@@ -62,6 +62,8 @@ This file tracks the project between sessions: current state, working rules, pit
 
 ## Known pitfalls (carried over from Planecircle)
 
+- **Node 24** (`.nvmrc`, `engines`; CI reads `.nvmrc`): under Node 22 before 22.18, `vite.config.ts` fails to load (it imports a server `.ts` file) and the online tests break. After `nvm alias default 24`, open a new terminal.
+
 - **Vite under WSL** may serve a stale version of an engine module: restart `npm run dev` before any browser test.
 - **Vitest 5.0.1 and `/tmp`:** each run creates `/tmp/<nanoid>/ssr` (about 60 MB) without deleting it; the plugin in `vitest.config.ts` deletes it on close.
 - **Biome:** `npx biome check . | tail -1` hides errors (grep "Found"); a `*/` in a JSDoc comment closes it.
